@@ -10,4 +10,3 @@ urlpatterns = [
     path('reset_password/<int:user_id>/', views.reset_password, name='reset_password'),
     path('find_password/get_captcha/', views.get_captcha, name='get_captcha'),
 ]
-

@@ -46,6 +46,9 @@ def user_login(request):
         if form.is_valid():
             auth_login(request, form.get_user())
             return redirect('blog:index')
+        else:
+            messages.error(request, '用户名或密码错误')
+            return render(request,'html/login.html',{'form':form})
         
     else:
         form = UserLoginForm()
