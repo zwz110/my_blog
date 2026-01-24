@@ -21,8 +21,8 @@ from django.urls import path,include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('blog/',include('blog.urls')),
-    # 添加认证URL
-    path('',include('django.contrib.auth.urls')),
     # 添加用户注册URL
     path('user/', include('user.urls')),
+    # 添加Django内置认证URL
+    path('', include('django.contrib.auth.urls')),
 ]

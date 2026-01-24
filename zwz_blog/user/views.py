@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .forms import UserRegisterForm,UserLoginForm,FindPasswordForm,ResetPasswordForm
-from django.contrib.auth import login as auth_login
+from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.http import HttpResponse,JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib import messages
@@ -167,3 +167,19 @@ def reset_password(request, user_id):
     else:
         form=ResetPasswordForm()
     return render(request,'html/reset_password.html',{'form':form})
+def logout(request):
+    # 退出登录视图
+    if request.method == 'POST':
+        auth_logout(request)
+        messages.success(request, '已退出登录')
+        return redirect('user:login')
+    else:
+        form = UserLoginForm()
+        return render(request, 'html/login.html', {'form': form})
+
+def profile(request):
+    # 个人中心视图
+    if not request.user.is_authenticated:
+        messages.error(request, '请先登录')
+        return redirect('user:login')
+    return render(request, 'html/profile.html')

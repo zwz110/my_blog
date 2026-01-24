@@ -108,13 +108,14 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+# settings.py
+LANGUAGE_CODE = 'zh-hans'  # 改为中文
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'  # 改为中国时区
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = True  # 保持为True，让Django在存储时使用UTC，显示时根据TIME_ZONE转换
 
 
 # Static files (CSS, JavaScript, Images)
@@ -133,3 +134,7 @@ EMAIL_HOST_USER = '2425368064@qq.com'
 EMAIL_HOST_PASSWORD = 'bxisdqssrjwdebba'
 # 默认发件人邮箱
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+# settings.py
+DATE_FORMAT = 'Y-m-d'
+TIME_FORMAT = 'H:i:s'  # 24小时制
+DATETIME_FORMAT = 'Y-m-d H:i:s'  # 24小时制

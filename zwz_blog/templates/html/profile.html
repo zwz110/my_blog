@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - ZwZ Blog</title>
+    <!-- 引入Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- 引入Font Awesome图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- 自定义样式 -->
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        /* 导航栏样式 */
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* 个人中心容器样式 */
+        .profile-container {
+            margin-top: 30px;
+            margin-bottom: 50px;
+        }
+        
+        /* 侧边栏样式 */
+        .sidebar {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        /* 个人信息卡片样式 */
+        .profile-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        /* 文章列表卡片样式 */
+        .article-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        /* 侧边栏菜单项样式 */
+        .sidebar-menu-item {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .sidebar-menu-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .sidebar-menu-item.active {
+            background-color: #e9ecef;
+            font-weight: 500;
+        }
+        
+        /* 头像样式 */
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #f8f9fa;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* 表单样式 */
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        /* 标签样式 */
+        .badge-custom {
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'blog:index' %}">
+                <strong>ZwZ Blog</strong>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:index' %}">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">分类</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">标签</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">关于</a>
+                    </li>
+                </ul>
+                
+                <!-- 用户菜单 + 搜索框 -->
+                <div class="d-flex align-items-center">
+                    <!-- 用户认证菜单 -->
+                    <ul class="navbar-nav mr-4">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {{ user.username }}
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                                    <a class="dropdown-item" href="{% url 'user:profile' %}">个人中心</a>
+                                    <a class="dropdown-item" href="#">我的文章</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">退出登录</a>
+                                </div>
+                            </li>
+                        {% else %}
+                            <li class="nav-item mr-2">
+                                <a class="nav-link" href="{% url 'user:login' %}">登录</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'user:register' %}">注册</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                    <form class="form-inline my-2 my-lg-0">
+                        <input class="form-control mr-sm-2" type="search" placeholder="搜索" aria-label="Search">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">搜索</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 个人中心内容 -->
+    <div class="container profile-container">
+        <div class="row">
+            <!-- 侧边栏 -->
+            <div class="col-md-3">
+                <div class="sidebar">
+                    <div class="text-center mb-4">
+                        <img src="https://picsum.photos/200/200?random=10" class="avatar" alt="用户头像">
+                        <h4 class="mt-3">{{ user.username }}</h4>
+                        <p class="text-muted">{{ user.email }}</p>
+                    </div>
+                    
+                    <div class="sidebar-menu">
+                        <div class="sidebar-menu-item active">
+                            <i class="fas fa-user-circle mr-2"></i> 个人信息
+                        </div>
+                        <div class="sidebar-menu-item">
+                            <i class="fas fa-edit mr-2"></i> 编辑资料
+                        </div>
+                        <div class="sidebar-menu-item">
+                            <i class="fas fa-file-alt mr-2"></i> 我的文章
+                        </div>
+                        <div class="sidebar-menu-item">
+                            <i class="fas fa-heart mr-2"></i> 我的收藏
+                        </div>
+                        <div class="sidebar-menu-item">
+                            <i class="fas fa-comment mr-2"></i> 我的评论
+                        </div>
+                        <div class="sidebar-menu-item">
+                            <i class="fas fa-cog mr-2"></i> 账号设置
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 主内容区 -->
+            <div class="col-md-9">
+                <!-- 个人信息卡片 -->
+                <div class="profile-card">
+                    <h3 class="mb-4">
+                        <i class="fas fa-user-circle mr-2"></i> 个人信息
+                    </h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">用户名</label>
+                                <p class="form-control-plaintext">{{ user.username }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">邮箱</label>
+                                <p class="form-control-plaintext">{{ user.email }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">注册时间</label>
+                                <p class="form-control-plaintext">{{ user.date_joined|date:"Y-m-d H:i:s" }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">昵称</label>
+                                <p class="form-control-plaintext">{{ user.first_name|default:"未设置" }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">个人简介</label>
+                                <p class="form-control-plaintext">{% if user.profile.bio %}{{ user.profile.bio }}{% else %}未设置{% endif %}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">网站</label>
+                                <p class="form-control-plaintext">{% if user.profile.website %}{{ user.profile.website }}{% else %}未设置{% endif %}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button type="button" class="btn btn-primary">
+                            <i class="fas fa-edit mr-1"></i> 编辑资料
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 我的文章卡片 -->
+                <div class="article-card">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3>
+                            <i class="fas fa-file-alt mr-2"></i> 我的文章
+                        </h3>
+                        <a href="#" class="btn btn-success">
+                            <i class="fas fa-plus mr-1"></i> 发布文章
+                        </a>
+                    </div>
+                    
+                    <!-- 文章列表 -->
+                    <div class="article-list">
+                        <!-- 文章项1 -->
+                        <div class="mb-4 pb-4 border-bottom">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h5 class="mb-2">
+                                    <a href="#" class="text-dark text-decoration-none">Django框架入门指南</a>
+                                </h5>
+                                <div class="d-flex">
+                                    <button type="button" class="btn btn-sm btn-outline-primary mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="text-muted mb-2">
+                                <span class="badge-custom bg-primary">技术分享</span>
+                                <span class="ml-2">2026-01-19</span>
+                            </p>
+                            <p class="text-muted">Django是一个高级Python Web框架，鼓励快速开发和简洁实用的设计。本文将介绍Django的基本概念、安装配置以及如何创建第一个Django应用...</p>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <div class="text-muted">
+                                    <i class="far fa-eye mr-1"></i> 120
+                                    <i class="far fa-comment ml-3 mr-1"></i> 8
+                                    <i class="far fa-heart ml-3 mr-1"></i> 15
+                                </div>
+                                <span class="text-muted">状态：已发布</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 文章项2 -->
+                        <div class="mb-4 pb-4 border-bottom">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h5 class="mb-2">
+                                    <a href="#" class="text-dark text-decoration-none">Python高级特性详解</a>
+                                </h5>
+                                <div class="d-flex">
+                                    <button type="button" class="btn btn-sm btn-outline-primary mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="text-muted mb-2">
+                                <span class="badge-custom bg-warning text-dark">学习笔记</span>
+                                <span class="ml-2">2026-01-17</span>
+                            </p>
+                            <p class="text-muted">Python有许多强大的高级特性，如装饰器、生成器、上下文管理器等。本文详细讲解了这些特性的用法和实现原理，帮助你更好地理解和使用Python...</p>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <div class="text-muted">
+                                    <i class="far fa-eye mr-1"></i> 89
+                                    <i class="far fa-comment ml-3 mr-1"></i> 5
+                                    <i class="far fa-heart ml-3 mr-1"></i> 12
+                                </div>
+                                <span class="text-muted">状态：已发布</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 文章项3 -->
+                        <div class="mb-4 pb-4 border-bottom">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h5 class="mb-2">
+                                    <a href="#" class="text-dark text-decoration-none">前端开发最佳实践</a>
+                                </h5>
+                                <div class="d-flex">
+                                    <button type="button" class="btn btn-sm btn-outline-primary mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="text-muted mb-2">
+                                <span class="badge-custom bg-info">技术分享</span>
+                                <span class="ml-2">2026-01-16</span>
+                            </p>
+                            <p class="text-muted">前端开发领域发展迅速，本文总结了一些前端开发的最佳实践，包括代码组织、性能优化、用户体验等方面的内容，帮助你写出更加专业的前端代码...</p>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <div class="text-muted">
+                                    <i class="far fa-eye mr-1"></i> 156
+                                    <i class="far fa-comment ml-3 mr-1"></i> 12
+                                    <i class="far fa-heart ml-3 mr-1"></i> 23
+                                </div>
+                                <span class="text-muted">状态：已发布</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 分页 -->
+                    <nav aria-label="Page navigation example" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1">上一页</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">下一页</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 退出登录模态框 -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">确认退出</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    确定要退出登录吗？
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <form method="post" action="{% url 'user:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">确定退出</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入JS文件 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 侧边栏菜单切换
+        document.querySelectorAll('.sidebar-menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // 移除所有菜单项的active类
+                document.querySelectorAll('.sidebar-menu-item').forEach(menuItem => {
+                    menuItem.classList.remove('active');
+                });
+                // 添加当前菜单项的active类
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
