@@ -117,16 +117,16 @@
         <div class="collapse navbar-collapse" id="navbarNavMain">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
-                    <a class="nav-link" href="#">首页 <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="{% url 'blog:index' %}">首页 <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">分类</a>
+                    <a class="nav-link" href="{% url 'blog:category' %}">分类</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">标签</a>
+                    <a class="nav-link" href="{% url 'blog:tag' %}">标签</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">关于</a>
+                    <a class="nav-link" href="{% url 'blog:about' %}">关于</a>
                 </li>
             </ul>
         </div>
@@ -142,7 +142,7 @@
                         </a>
                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
                             <a class="dropdown-item" href="{% url 'user:profile' %}">个人中心</a>
-                            <a class="dropdown-item" href="#">我的文章</a>
+                            <a class="dropdown-item" href="{% url 'user:my_posts' %}">我的文章</a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">退出登录</a>
                         </div>

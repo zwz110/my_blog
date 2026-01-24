@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的文章 - ZwZ Blog</title>
+    <!-- 引入Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- 引入Font Awesome图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- 自定义样式 -->
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        /* 导航栏样式 */
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* 我的文章页面容器样式 */
+        .my-posts-container {
+            margin-top: 30px;
+            margin-bottom: 50px;
+        }
+        
+        /* 卡片样式 */
+        .post-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        /* 文章列表项样式 */
+        .post-item {
+            transition: background-color 0.2s ease;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid #f0f0f0;
+        }
+        
+        .post-item:hover {
+            background-color: #f8f9fa;
+            border-color: #e9ecef;
+        }
+        
+        /* 标题样式 */
+        .section-title {
+            position: relative;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background-color: #007bff;
+        }
+        
+        /* 标签样式 */
+        .badge-custom {
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        
+        /* 操作按钮样式 */
+        .action-btn {
+            margin-right: 8px;
+        }
+        
+        /* 空状态样式 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #adb5bd;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'blog:index' %}">
+                <strong>ZwZ Blog</strong>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:index' %}">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:category' %}">分类</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:tag' %}">标签</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:about' %}">关于</a>
+                    </li>
+                </ul>
+                
+                <!-- 用户菜单 + 搜索框 -->
+                <div class="d-flex align-items-center">
+                    <!-- 用户认证菜单 -->
+                    <ul class="navbar-nav mr-4">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {{ user.username }}
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                                    <a class="dropdown-item" href="{% url 'user:profile' %}">个人中心</a>
+                                    <a class="dropdown-item" href="{% url 'user:my_posts' %}">我的文章</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">退出登录</a>
+                                </div>
+                            </li>
+                        {% else %}
+                            <li class="nav-item mr-2">
+                                <a class="nav-link" href="{% url 'user:login' %}">登录</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'user:register' %}">注册</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                    <form class="form-inline my-2 my-lg-0">
+                        <input class="form-control mr-sm-2" type="search" placeholder="搜索" aria-label="Search">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">搜索</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 我的文章页面内容 -->
+    <div class="container my-posts-container">
+        <!-- 页面标题和操作按钮 -->
+        <div class="post-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title">
+                    <i class="fas fa-file-alt mr-2"></i> 我的文章
+                </h2>
+                <a href="#" class="btn btn-success">
+                    <i class="fas fa-plus mr-1"></i> 发布文章
+                </a>
+            </div>
+            
+            <!-- 文章状态筛选 -->
+            <div class="mb-4">
+                <div class="btn-group" role="group" aria-label="文章状态筛选">
+                    <button type="button" class="btn btn-primary">全部</button>
+                    <button type="button" class="btn btn-outline-primary">已发布</button>
+                    <button type="button" class="btn btn-outline-primary">草稿</button>
+                    <button type="button" class="btn btn-outline-primary">待审核</button>
+                </div>
+            </div>
+            
+            <!-- 文章列表 -->
+            <div class="post-list">
+                <!-- 文章项1 -->
+                <div class="post-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h4 class="mb-2">
+                                <a href="#" class="text-dark text-decoration-none">Django框架入门指南</a>
+                            </h4>
+                            <div class="d-flex flex-wrap mb-3">
+                                <span class="badge-custom bg-primary mr-2 mb-2">技术分享</span>
+                                <span class="badge-custom bg-success mr-2 mb-2">已发布</span>
+                            </div>
+                            <p class="text-muted mb-3">Django是一个高级Python Web框架，鼓励快速开发和简洁实用的设计。本文将介绍Django的基本概念、安装配置以及如何创建第一个Django应用...</p>
+                            <div class="d-flex flex-wrap align-items-center text-muted">
+                                <span class="mr-4"><i class="far fa-calendar-alt mr-1"></i> 2026-01-19</span>
+                                <span class="mr-4"><i class="far fa-eye mr-1"></i> 120</span>
+                                <span class="mr-4"><i class="far fa-comment mr-1"></i> 8</span>
+                                <span class="mr-4"><i class="far fa-heart mr-1"></i> 15</span>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <a href="#" class="btn btn-sm btn-outline-primary action-btn mb-2">
+                                <i class="fas fa-edit mr-1"></i> 编辑
+                            </a>
+                            <a href="#" class="btn btn-sm btn-outline-secondary action-btn mb-2">
+                                <i class="fas fa-eye mr-1"></i> 查看
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger action-btn" data-bs-toggle="modal" data-bs-target="#deleteModal1">
+                                <i class="fas fa-trash mr-1"></i> 删除
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 文章项2 -->
+                <div class="post-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h4 class="mb-2">
+                                <a href="#" class="text-dark text-decoration-none">Python高级特性详解</a>
+                            </h4>
+                            <div class="d-flex flex-wrap mb-3">
+                                <span class="badge-custom bg-warning text-dark mr-2 mb-2">学习笔记</span>
+                                <span class="badge-custom bg-success mr-2 mb-2">已发布</span>
+                            </div>
+                            <p class="text-muted mb-3">Python有许多强大的高级特性，如装饰器、生成器、上下文管理器等。本文详细讲解了这些特性的用法和实现原理，帮助你更好地理解和使用Python...</p>
+                            <div class="d-flex flex-wrap align-items-center text-muted">
+                                <span class="mr-4"><i class="far fa-calendar-alt mr-1"></i> 2026-01-17</span>
+                                <span class="mr-4"><i class="far fa-eye mr-1"></i> 89</span>
+                                <span class="mr-4"><i class="far fa-comment mr-1"></i> 5</span>
+                                <span class="mr-4"><i class="far fa-heart mr-1"></i> 12</span>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <a href="#" class="btn btn-sm btn-outline-primary action-btn mb-2">
+                                <i class="fas fa-edit mr-1"></i> 编辑
+                            </a>
+                            <a href="#" class="btn btn-sm btn-outline-secondary action-btn mb-2">
+                                <i class="fas fa-eye mr-1"></i> 查看
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger action-btn" data-bs-toggle="modal" data-bs-target="#deleteModal2">
+                                <i class="fas fa-trash mr-1"></i> 删除
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 文章项3（草稿） -->
+                <div class="post-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h4 class="mb-2">
+                                <a href="#" class="text-dark text-decoration-none">前端开发最佳实践</a>
+                            </h4>
+                            <div class="d-flex flex-wrap mb-3">
+                                <span class="badge-custom bg-info mr-2 mb-2">技术分享</span>
+                                <span class="badge-custom bg-secondary mr-2 mb-2">草稿</span>
+                            </div>
+                            <p class="text-muted mb-3">前端开发领域发展迅速，本文总结了一些前端开发的最佳实践，包括代码组织、性能优化、用户体验等方面的内容，帮助你写出更加专业的前端代码...</p>
+                            <div class="d-flex flex-wrap align-items-center text-muted">
+                                <span class="mr-4"><i class="far fa-calendar-alt mr-1"></i> 2026-01-16</span>
+                                <span class="mr-4"><i class="far fa-eye mr-1"></i> 0</span>
+                                <span class="mr-4"><i class="far fa-comment mr-1"></i> 0</span>
+                                <span class="mr-4"><i class="far fa-heart mr-1"></i> 0</span>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <a href="#" class="btn btn-sm btn-outline-primary action-btn mb-2">
+                                <i class="fas fa-edit mr-1"></i> 编辑
+                            </a>
+                            <a href="#" class="btn btn-sm btn-outline-secondary action-btn mb-2">
+                                <i class="fas fa-eye mr-1"></i> 预览
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger action-btn" data-bs-toggle="modal" data-bs-target="#deleteModal3">
+                                <i class="fas fa-trash mr-1"></i> 删除
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 文章项4 -->
+                <div class="post-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h4 class="mb-2">
+                                <a href="#" class="text-dark text-decoration-none">数据库优化技巧</a>
+                            </h4>
+                            <div class="d-flex flex-wrap mb-3">
+                                <span class="badge-custom bg-primary mr-2 mb-2">技术分享</span>
+                                <span class="badge-custom bg-success mr-2 mb-2">已发布</span>
+                            </div>
+                            <p class="text-muted mb-3">数据库优化是Web应用性能优化的重要组成部分，本文介绍了一些实用的数据库优化技巧，包括索引设计、查询优化、分库分表等方面的内容...</p>
+                            <div class="d-flex flex-wrap align-items-center text-muted">
+                                <span class="mr-4"><i class="far fa-calendar-alt mr-1"></i> 2026-01-15</span>
+                                <span class="mr-4"><i class="far fa-eye mr-1"></i> 134</span>
+                                <span class="mr-4"><i class="far fa-comment mr-1"></i> 9</span>
+                                <span class="mr-4"><i class="far fa-heart mr-1"></i> 18</span>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <a href="#" class="btn btn-sm btn-outline-primary action-btn mb-2">
+                                <i class="fas fa-edit mr-1"></i> 编辑
+                            </a>
+                            <a href="#" class="btn btn-sm btn-outline-secondary action-btn mb-2">
+                                <i class="fas fa-eye mr-1"></i> 查看
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger action-btn" data-bs-toggle="modal" data-bs-target="#deleteModal4">
+                                <i class="fas fa-trash mr-1"></i> 删除
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 空状态（当没有文章时显示） -->
+                <!-- <div class="empty-state">
+                    <i class="far fa-folder-open"></i>
+                    <h3>暂无文章</h3>
+                    <p>您还没有发布过文章，点击"发布文章"按钮开始创作吧！</p>
+                    <a href="{% url 'blog:create_post' %}" class="btn btn-success mt-3">
+                        <i class="fas fa-plus mr-1"></i> 发布文章
+                    </a>
+                </div> -->
+            </div>
+            
+            <!-- 分页 -->
+            <nav aria-label="Page navigation example" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1">上一页</a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">下一页</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- 删除确认模态框1 -->
+    <div class="modal fade" id="deleteModal1" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel1" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel1">确认删除</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    确定要删除文章"Django框架入门指南"吗？此操作不可恢复。
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-danger">确定删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除确认模态框2 -->
+    <div class="modal fade" id="deleteModal2" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel2" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel2">确认删除</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    确定要删除文章"Python高级特性详解"吗？此操作不可恢复。
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-danger">确定删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除确认模态框3 -->
+    <div class="modal fade" id="deleteModal3" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel3" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel3">确认删除</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    确定要删除文章"前端开发最佳实践"吗？此操作不可恢复。
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-danger">确定删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除确认模态框4 -->
+    <div class="modal fade" id="deleteModal4" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel4" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel4">确认删除</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    确定要删除文章"数据库优化技巧"吗？此操作不可恢复。
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-danger">确定删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 退出登录模态框 -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">确认退出</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    确定要退出登录吗？
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <form method="post" action="{% url 'user:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">确定退出</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入JS文件 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 文章状态筛选按钮点击事件
+        document.querySelectorAll('.btn-group button').forEach(button => {
+            button.addEventListener('click', function() {
+                // 移除所有按钮的active类
+                document.querySelectorAll('.btn-group button').forEach(btn => {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-outline-primary');
+                });
+                // 添加当前按钮的active类
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-primary');
+                // 这里可以添加AJAX请求，根据筛选条件加载不同状态的文章
+            });
+        });
+    </script>
+</body>
+</html>

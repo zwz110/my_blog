@@ -183,3 +183,9 @@ def profile(request):
         messages.error(request, '请先登录')
         return redirect('user:login')
     return render(request, 'html/profile.html')
+def my_posts(request):
+    # 我的文章视图
+    if not request.user.is_authenticated:
+        messages.error(request, '请先登录')
+        return redirect('user:login')
+    return render(request, 'html/my_posts.html')

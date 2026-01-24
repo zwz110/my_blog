@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章标签 - ZwZ Blog</title>
+    <!-- 引入Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- 引入Font Awesome图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- 自定义样式 -->
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        /* 导航栏样式 */
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* 标签页面容器样式 */
+        .tag-container {
+            margin-top: 30px;
+            margin-bottom: 50px;
+        }
+        
+        /* 卡片样式 */
+        .tag-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        /* 标题样式 */
+        .section-title {
+            position: relative;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background-color: #007bff;
+        }
+        
+        /* 标签云样式 */
+        .tag-cloud {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .tag-cloud a {
+            display: inline-block;
+            margin: 5px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        /* 标签大小和颜色 */
+        .tag-size-1 {
+            font-size: 1rem;
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        
+        .tag-size-2 {
+            font-size: 1.2rem;
+            background-color: #dee2e6;
+            color: #495057;
+        }
+        
+        .tag-size-3 {
+            font-size: 1.4rem;
+            background-color: #ced4da;
+            color: #495057;
+        }
+        
+        .tag-size-4 {
+            font-size: 1.6rem;
+            background-color: #adb5bd;
+            color: #495057;
+        }
+        
+        .tag-size-5 {
+            font-size: 1.8rem;
+            background-color: #6c757d;
+            color: #ffffff;
+        }
+        
+        .tag-cloud a:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* 标签列表样式 */
+        .tag-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .tag-list-item {
+            transition: background-color 0.2s ease;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border: 1px solid #f0f0f0;
+        }
+        
+        .tag-list-item:hover {
+            background-color: #f8f9fa;
+            border-color: #e9ecef;
+        }
+        
+        .tag-list-item a {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-decoration: none;
+            color: #495057;
+        }
+        
+        .tag-count {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background-color: #e9ecef;
+        }
+        
+        /* 文章列表项样式 */
+        .post-item {
+            transition: background-color 0.2s ease;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .post-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .post-item:last-child {
+            border-bottom: none;
+        }
+        
+        /* 标签详情样式 */
+        .tag-detail {
+            margin-top: 30px;
+        }
+        
+        /* 空状态样式 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #adb5bd;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'blog:index' %}">
+                <strong>ZwZ Blog</strong>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:index' %}">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:category' %}">分类</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{% url 'blog:tag' %}">标签 <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:about' %}">关于</a>
+                    </li>
+                </ul>
+                
+                <!-- 用户菜单 + 搜索框 -->
+                <div class="d-flex align-items-center">
+                    <!-- 用户认证菜单 -->
+                    <ul class="navbar-nav mr-4">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {{ user.username }}
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                                    <a class="dropdown-item" href="{% url 'user:profile' %}">个人中心</a>
+                                    <a class="dropdown-item" href="{% url 'user:my_posts' %}">我的文章</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">退出登录</a>
+                                </div>
+                            </li>
+                        {% else %}
+                            <li class="nav-item mr-2">
+                                <a class="nav-link" href="{% url 'user:login' %}">登录</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'user:register' %}">注册</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                    <form class="form-inline my-2 my-lg-0">
+                        <input class="form-control mr-sm-2" type="search" placeholder="搜索" aria-label="Search">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">搜索</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 标签页面内容 -->
+    <div class="container tag-container">
+        <!-- 页面标题 -->
+        <div class="tag-card">
+            <h2 class="section-title">
+                <i class="fas fa-tags mr-2"></i> 文章标签
+            </h2>
+            <p class="lead">通过标签浏览我们的文章内容。</p>
+        </div>
+        
+        <!-- 标签云 -->
+        <div class="tag-card">
+            <h3 class="mb-4">
+                <i class="fas fa-cloud mr-2"></i> 标签云
+            </h3>
+            <div class="tag-cloud">
+                <a href="#" class="tag-size-5">Python</a>
+                <a href="#" class="tag-size-4">Django</a>
+                <a href="#" class="tag-size-3">前端开发</a>
+                <a href="#" class="tag-size-4">JavaScript</a>
+                <a href="#" class="tag-size-3">数据库</a>
+                <a href="#" class="tag-size-2">Linux</a>
+                <a href="#" class="tag-size-3">Git</a>
+                <a href="#" class="tag-size-2">算法</a>
+                <a href="#" class="tag-size-3">HTML5</a>
+                <a href="#" class="tag-size-2">CSS3</a>
+                <a href="#" class="tag-size-3">React</a>
+                <a href="#" class="tag-size-2">Vue</a>
+                <a href="#" class="tag-size-2">Node.js</a>
+                <a href="#" class="tag-size-3">MySQL</a>
+                <a href="#" class="tag-size-2">PostgreSQL</a>
+                <a href="#" class="tag-size-3">Redis</a>
+                <a href="#" class="tag-size-2">Docker</a>
+                <a href="#" class="tag-size-2">Kubernetes</a>
+                <a href="#" class="tag-size-3">RESTful API</a>
+                <a href="#" class="tag-size-2">GraphQL</a>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- 标签列表 -->
+            <div class="col-md-4">
+                <div class="tag-card">
+                    <h3 class="mb-4">
+                        <i class="fas fa-list mr-2"></i> 标签列表
+                    </h3>
+                    <ul class="tag-list">
+                        <li class="tag-list-item">
+                            <a href="#">
+                                <span>Python</span>
+                                <span class="tag-count">25</span>
+                            </a>
+                        </li>
+                        <li class="tag-list-item">
+                            <a href="#">
+                                <span>Django</span>
+                                <span class="tag-count">18</span>
+                            </a>
+                        </li>
+                        <li class="tag-list-item">
+                            <a href="#">
+                                <span>前端开发</span>
+                                <span class="tag-count">15</span>
+                            </a>
+                        </li>
+                        <li class="tag-list-item">
+                            <a href="#">
+                                <span>JavaScript</span>
+                                <span class="tag-count">16</span>
+                            </a>
+                        </li>
+                        <li class="tag-list-item">
+                            <a href="#">
+                                <span>数据库</span>
+                                <span class="tag-count">12</span>
+                            </a>
+                        </li>
+                        <li class="tag-list-item">
+                            <a href="#">
+                                <span>Linux</span>
+                                <span class="tag-count">8</span>
+                            </a>
+                        </li>
+                        <li class="tag-list-item">
+                            <a href="#">
+                                <span>Git</span>
+                                <span class="tag-count">10</span>
+                            </a>
+                        </li>
+                        <li class="tag-list-item">
+                            <a href="#">
+                                <span>算法</span>
+                                <span class="tag-count">7</span>
+                            </a>
+                        </li>
+                        <li class="tag-list-item">
+                            <a href="#">
+                                <span>HTML5</span>
+                                <span class="tag-count">9</span>
+                            </a>
+                        </li>
+                        <li class="tag-list-item">
+                            <a href="#">
+                                <span>CSS3</span>
+                                <span class="tag-count">8</span>
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="text-center mt-4">
+                        <a href="#" class="btn btn-outline-primary">
+                            查看全部标签
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 标签详情（示例：Python标签） -->
+            <div class="col-md-8">
+                <div class="tag-card">
+                    <div class="tag-detail">
+                        <h3>
+                            <i class="fas fa-tag mr-2"></i> Python
+                            <span class="tag-count ml-2">25 篇文章</span>
+                        </h3>
+                        <div class="post-list mt-4">
+                            <!-- 文章项1 -->
+                            <div class="post-item">
+                                <a href="#" class="text-dark text-decoration-none">
+                                    <h5 class="mb-1">Django框架入门指南</h5>
+                                    <p class="text-muted mb-2">Django是一个高级Python Web框架，鼓励快速开发和简洁实用的设计...</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">2026-01-19</small>
+                                        <span class="badge badge-primary">技术分享</span>
+                                    </div>
+                                </a>
+                            </div>
+                            
+                            <!-- 文章项2 -->
+                            <div class="post-item">
+                                <a href="#" class="text-dark text-decoration-none">
+                                    <h5 class="mb-1">Python高级特性详解</h5>
+                                    <p class="text-muted mb-2">Python有许多强大的高级特性，如装饰器、生成器、上下文管理器等...</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">2026-01-17</small>
+                                        <span class="badge badge-warning text-dark">学习笔记</span>
+                                    </div>
+                                </a>
+                            </div>
+                            
+                            <!-- 文章项3 -->
+                            <div class="post-item">
+                                <a href="#" class="text-dark text-decoration-none">
+                                    <h5 class="mb-1">Python性能优化技巧</h5>
+                                    <p class="text-muted mb-2">如何优化Python代码的性能？本文分享了一些实用的性能优化技巧...</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">2026-01-14</small>
+                                        <span class="badge badge-primary">技术分享</span>
+                                    </div>
+                                </a>
+                            </div>
+                            
+                            <!-- 文章项4 -->
+                            <div class="post-item">
+                                <a href="#" class="text-dark text-decoration-none">
+                                    <h5 class="mb-1">Python数据分析入门</h5>
+                                    <p class="text-muted mb-2">使用Python进行数据分析，从NumPy、Pandas到Matplotlib...</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">2026-01-10</small>
+                                        <span class="badge badge-info">技术分享</span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- 分页 -->
+                        <nav aria-label="Page navigation example" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1">上一页</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">下一页</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 空状态（当没有标签时显示） -->
+        <!-- <div class="empty-state">
+            <i class="fas fa-tags"></i>
+            <h3>暂无标签</h3>
+            <p>网站还没有创建任何标签，敬请期待。</p>
+        </div> -->
+    </div>
+
+    <!-- 退出登录模态框 -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">确认退出</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    确定要退出登录吗？
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <form method="post" action="{% url 'user:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">确定退出</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="footer" style="background-color: #343a40; color: #ffffff; padding: 40px 0 20px; margin-top: 60px;">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5>关于ZwZ Blog</h5>
+                    <p>ZwZ Blog是一个分享技术知识和生活感悟的个人博客平台，致力于为读者提供高质量的内容。</p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>快速链接</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'blog:index' %}" class="text-light">首页</a></li>
+                        <li><a href="{% url 'blog:category' %}" class="text-light">分类</a></li>
+                        <li><a href="{% url 'blog:tag' %}" class="text-light">标签</a></li>
+                        <li><a href="{% url 'blog:about' %}" class="text-light">关于我们</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>联系方式</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-envelope mr-2"></i> contact@zwzblog.com</li>
+                        <li><i class="fas fa-phone mr-2"></i> 138-0000-0000</li>
+                        <li><i class="fas fa-map-marker-alt mr-2"></i> 北京市朝阳区</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="bg-secondary">
+            <div class="text-center">
+                <p>&copy; 2026 ZwZ Blog. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 引入JS文件 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
