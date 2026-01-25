@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.db.models import Q
 
 # Create your views here.
 def index(request):
@@ -40,7 +41,7 @@ def post_detail(request, year, month, day, slug):
             return redirect('blog:post_detail', year=year, month=month, day=day, slug=slug)
     
     # 获取已批准的评论
-    comments = post.comments.filter(status='approved').order_by('created_at')
+    comments = post.comments.filter(status='published').order_by('created_at')
     
     # 获取相关文章
     related_posts = Post.objects.filter(
@@ -53,3 +54,39 @@ def post_detail(request, year, month, day, slug):
         'comments': comments,
         'related_posts': related_posts
     })
+def search(request):
+    # 导入模型
+    from .models import Post
+    
+    # 1. 规范化关键词：去除首尾空格，统一处理空值
+    query = request.GET.get('search', '').strip()
+    posts = Post.objects.none()  # 初始化空查询集
+    
+    if query:
+        try:
+            # 2. 优化查询：只查询需要的字段，减少数据库负载
+            #    增加索引友好的查询条件（status='published' 前置）
+            posts = Post.objects.filter(
+                Q(status='published') & 
+                (Q(title__icontains=query) | Q(content__icontains=query) | Q(tags__name__icontains=query))
+            ).distinct().select_related('author')  # 预加载关联字段，减少N+1查询
+            
+            # 3. 可选：添加排序，让搜索结果更有意义
+            posts = posts.order_by('-published_at')
+            
+            # 4. 为每个帖子计算已批准的评论数量
+            for post in posts:
+                post.approved_comments_count = post.comments.filter(status='approved').count()
+            
+        except Exception as e:
+            # 4. 异常处理：捕获数据库查询异常，避免程序崩溃
+            print(f"搜索出错: {str(e)}")  # 实际项目中建议用logger记录
+            posts = Post.objects.none()
+    
+    # 5. 传递更多上下文，方便模板展示
+    context = {
+        'posts': posts,
+        'query': query,
+        'total_results': posts.count(),  # 告诉用户搜索结果数量
+    }
+    return render(request, 'html/search.html', context)

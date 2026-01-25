@@ -8,4 +8,5 @@ urlpatterns=[
     path('category/',blog_v.category,name='category'),
     path('tag/',blog_v.tag,name='tag'),
     path('<int:year>/<int:month>/<int:day>/<slug:slug>/',blog_v.post_detail,name='post_detail'),
+    path('search/',blog_v.search,name='search')
 ]
