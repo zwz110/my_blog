@@ -72,3 +72,24 @@ class Comment(models.Model):
     
     def is_reply(self):
         return self.parent is not None
+
+class Message(models.Model):
+    """留言模型"""
+    name = models.CharField(max_length=50, verbose_name='姓名')
+    email = models.EmailField(max_length=100, verbose_name='邮箱')
+    content = models.TextField(verbose_name='留言内容')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    status = models.CharField(
+        max_length=20,
+        choices=(('pending', '待审核'), ('approved', '已批准'), ('rejected', '已拒绝')),
+        default='pending',
+        verbose_name='状态'
+    )
+
+    class Meta:
+        verbose_name = '留言'
+        verbose_name_plural = '留言管理'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.name}: {self.content[:30]}'

@@ -148,8 +148,8 @@
                             </li>
                         {% endif %}
                     </ul>
-                    <form class="form-inline my-2 my-lg-0">
-                        <input class="form-control mr-sm-2" type="search" placeholder="搜索" aria-label="Search">
+                    <form class="form-inline my-2 my-lg-0" action="{% url 'blog:search' %}" method="get">
+                        <input class="form-control mr-sm-2" type="search" name="search" placeholder="搜索" aria-label="Search">
                         <button class="btn btn-outline-success my-2 my-sm-0" type="submit">搜索</button>
                     </form>
                 </div>
@@ -468,8 +468,8 @@
                     <h5>快速链接</h5>
                     <ul class="list-unstyled">
                         <li><a href="{% url 'blog:index' %}" class="text-light">首页</a></li>
-                        <li><a href="#" class="text-light">分类</a></li>
-                        <li><a href="#" class="text-light">标签</a></li>
+                        <li><a href="{% url 'blog:category' %}" class="text-light">分类</a></li>
+                        <li><a href="{% url 'blog:tag' %}" class="text-light">标签</a></li>
                         <li><a href="{% url 'blog:about' %}" class="text-light">关于我们</a></li>
                     </ul>
                 </div>

@@ -103,7 +103,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
     <div class="container">
         <!-- 博客标题/Logo -->
-        <a class="navbar-brand" href="#">
+        <a class="navbar-brand" href="{% url 'blog:index' %}">
             <strong>ZwZ Blog</strong>
         </a>
         
@@ -158,10 +158,10 @@
             </ul>
 
             <!-- 搜索框 -->
-            <form class="form-inline my-2 my-lg-0">
-                <input class="form-control mr-sm-2" type="search" placeholder="搜索" aria-label="Search">
-                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">搜索</button>
-            </form>
+           <form class="form-inline my-2 my-lg-0" action="{% url 'blog:search' %}" method="get">
+                        <input class="form-control mr-sm-2" type="search" name="search" placeholder="搜索" aria-label="Search">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">搜索</button>
+                    </form>
         </div>
     </div>
 </nav>
