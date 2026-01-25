@@ -6,8 +6,26 @@ from .models import Message, Post
 # Create your views here.
 def index(request):
     """首页视图，显示已发布的文章列表"""
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    
     # 获取已发布的文章，按发布时间倒序排列，预加载作者信息，过滤掉slug为空的文章
-    posts = Post.objects.filter(status='published', author__isnull=False, slug__isnull=False).exclude(slug='').select_related('author').order_by('-published_at')
+    posts_list = Post.objects.filter(status='published', author__isnull=False, slug__isnull=False).exclude(slug='').select_related('author').order_by('-published_at')
+    
+    # 分页设置：每页显示5篇文章
+    paginator = Paginator(posts_list, 5)
+    
+    # 获取当前页码，默认为1
+    page = request.GET.get('page', 1)
+    
+    try:
+        # 获取当前页的文章
+        posts = paginator.page(page)
+    except PageNotAnInteger:
+        # 如果页码不是整数，显示第一页
+        posts = paginator.page(1)
+    except EmptyPage:
+        # 如果页码超出范围，显示最后一页
+        posts = paginator.page(paginator.num_pages)
     
     # 获取热门文章（这里简单按发布时间排序，实际项目中可能需要按浏览量等计算）
     hot_posts = Post.objects.filter(status='published', author__isnull=False, slug__isnull=False).exclude(slug='').select_related('author').order_by('-published_at')[:5]
@@ -100,8 +118,9 @@ def post_detail(request, year, month, day, slug):
         'related_posts': related_posts
     })
 def search(request):
-    # 导入模型
+    # 导入模型和Q对象
     from .models import Post
+    from django.db.models import Q
     
     # 1. 规范化关键词：去除首尾空格，统一处理空值
     query = request.GET.get('search', '').strip()
