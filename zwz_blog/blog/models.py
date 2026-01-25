@@ -43,7 +43,17 @@ class Post(models.Model):
         return self.title
     
     def get_absolute_url(self):
-        return reverse('blog:post_detail', args=[self.published_at.year, self.published_at.month, self.published_at.day, self.slug])
+        return reverse('blog:post_detail', kwargs={
+            'year': self.published_at.year,
+            'month':self.published_at.month,  # 1 → "01"
+            'day': self.published_at.day,  # 5 → "05"
+            'slug': self.slug
+        })
+    def save(self, *args, **kwargs):
+        # 自动生成 slug：如果为空，用标题生成
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
 
 class Comment(models.Model):
     """评论模型"""

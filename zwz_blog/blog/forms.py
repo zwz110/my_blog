@@ -1,5 +1,5 @@
 from django import forms
-from .models import Post
+from .models import Post,Message
 from taggit.forms import TagField, TagWidget
 
 class PostForm(forms.ModelForm):
@@ -27,4 +27,15 @@ class PostForm(forms.ModelForm):
             'feature_image': '特色图片',
             'status': '文章状态',
             'published_at': '发布时间',
+        }
+
+class MessageForm(forms.ModelForm):
+    """留言表单"""
+    class Meta:
+        model = Message
+        fields = ['name', 'email', 'content']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '请输入您的姓名'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': '请输入您的邮箱'}),
+            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': '请输入您的留言内容'}),
         }

@@ -367,7 +367,7 @@
                     </div>
                     <div class="contact-item">
                         <i class="fab fa-github"></i>
-                        <span><a href="#" class="text-dark">github.com/zwzblog</a></span>
+                        <span><a href="https://github.com/zwz110" class="text-dark">github.com/zwzblog</a></span>
                     </div>
                     <div class="contact-item">
                         <i class="fab fa-twitter"></i>
@@ -377,29 +377,37 @@
                 
                 <!-- 留言表单 -->
                 <div class="col-md-6">
-                    <form>
+                    <form method="post" class="mb-4">
+                        {% csrf_token %}
                         <div class="mb-3">
-                            <label for="name" class="form-label">姓名</label>
-                            <input type="text" class="form-control" id="name" placeholder="请输入您的姓名">
+                            {{ form.name.label_tag }}
+                            {{ form.name }}
                         </div>
                         <div class="mb-3">
-                            <label for="email" class="form-label">邮箱</label>
-                            <input type="email" class="form-control" id="email" placeholder="请输入您的邮箱">
+                            {{ form.email.label_tag }}
+                            {{ form.email }}
                         </div>
                         <div class="mb-3">
-                            <label for="subject" class="form-label">主题</label>
-                            <input type="text" class="form-control" id="subject" placeholder="请输入留言主题">
-                        </div>
-                        <div class="mb-3">
-                            <label for="message" class="form-label">留言内容</label>
-                            <textarea class="form-control" id="message" rows="4" placeholder="请输入您的留言内容"></textarea>
+                            {{ form.content.label_tag }}
+                            {{ form.content }}
                         </div>
                         <button type="submit" class="btn btn-primary">提交留言</button>
                     </form>
                 </div>
             </div>
         </div>
-        
+        <!-- 显示已批准的留言 -->
+            {% if messages %}
+                <h5 class="mt-5 mb-3">留言板</h5>
+                {% for message in messages %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ message.name }} <small class="text-muted">{{ message.created_at|date:"Y-m-d H:i" }}</small></h6>
+                            <p class="card-text">{{ message.content }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
         <!-- 网站统计卡片 -->
         <div class="about-card">
             <h2 class="section-title">

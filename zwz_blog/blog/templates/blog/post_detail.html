@@ -280,7 +280,7 @@
                         <a class="nav-link" href="{% url 'blog:tag' %}">标签</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'user:about' %}">关于</a>
+                        <a class="nav-link" href="{% url 'blog:about' %}">关于</a>
                     </li>
                 </ul>
                 
@@ -419,7 +419,7 @@
                                 {% endif %}
                                 
                                 <!-- 回复列表 -->
-                                {% for reply in comment.replies.filter(status='approved') %}
+                                {% for reply in comment.approved_replies %}
                                     <div class="comment-item mt-3 ml-5">
                                         <div class="comment-header">
                                             <span class="comment-author">{{ reply.author.username }}</span>
@@ -551,7 +551,7 @@
                         <li><a href="{% url 'blog:index' %}" class="text-light">首页</a></li>
                         <li><a href="{% url 'blog:category' %}" class="text-light">分类</a></li>
                         <li><a href="{% url 'blog:tag' %}" class="text-light">标签</a></li>
-                        <li><a href="{% url 'user:about' %}" class="text-light">关于我们</a></li>
+                        <li><a href="{% url 'blog:about' %}" class="text-light">关于我们</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
