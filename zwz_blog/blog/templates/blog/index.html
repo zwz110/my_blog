@@ -367,17 +367,17 @@
                 <div class="col-md-4 mb-4">
                     <h5>快速链接</h5>
                     <ul class="list-unstyled">
-                        <li><a href="#" class="text-light">首页</a></li>
-                        <li><a href="#" class="text-light">分类</a></li>
-                        <li><a href="#" class="text-light">标签</a></li>
-                        <li><a href="#" class="text-light">关于我</a></li>
+                        <li><a href="{% url 'blog:index' %}" class="text-light">首页</a></li>
+                        <li><a href="{% url 'blog:category' %}" class="text-light">分类</a></li>
+                        <li><a href="{% url 'blog:tag' %}" class="text-light">标签</a></li>
+                        <li><a href="{% url 'blog:about' %}" class="text-light">关于我</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
                     <h5>联系方式</h5>
                     <ul class="list-unstyled">
                         <li><i class="fas fa-envelope mr-2"></i> contact@zwzblog.com</li>
-                        <li><i class="fas fa-phone mr-2"></i> 138-0000-0000</li>
+                        <li><i class="fas fa-phone mr-2"></i> 191-3960-2961</li>
                         <li><i class="fas fa-map-marker-alt mr-2"></i> 北京市朝阳区</li>
                     </ul>
                 </div>

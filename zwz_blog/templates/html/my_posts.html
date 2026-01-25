@@ -161,7 +161,7 @@
                 <h2 class="section-title">
                     <i class="fas fa-file-alt mr-2"></i> 我的文章
                 </h2>
-                <a href="#" class="btn btn-success">
+                <a href="{% url 'user:create_post' %}" class="btn btn-success">
                     <i class="fas fa-plus mr-1"></i> 发布文章
                 </a>
             </div>
@@ -315,7 +315,7 @@
                     <i class="far fa-folder-open"></i>
                     <h3>暂无文章</h3>
                     <p>您还没有发布过文章，点击"发布文章"按钮开始创作吧！</p>
-                    <a href="{% url 'blog:create_post' %}" class="btn btn-success mt-3">
+                    <a href="{% url 'user:create_post' %}" class="btn btn-success mt-3">
                         <i class="fas fa-plus mr-1"></i> 发布文章
                     </a>
                 </div> -->

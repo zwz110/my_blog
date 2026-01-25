@@ -9,7 +9,7 @@
     <!-- 引入Font Awesome图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <!-- 引入CKEditor -->
-    <script src="https://cdn.ckeditor.com/4.16.2/standard/ckeditor.js"></script>
+    <script src="https://cdn.ckeditor.com/4.25.1-lts/standard/ckeditor.js"></script>
     <!-- 自定义样式 -->
     <style>
         body {
@@ -213,56 +213,144 @@
             
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
+                
+                <!-- 文章标题 -->
                 <div class="mb-4">
                     <label for="title" class="form-label">文章标题</label>
-                    <input type="text" class="form-control form-control-lg" id="title" name="title" placeholder="请输入文章标题" required>
+                    <input type="text" 
+                           class="form-control form-control-lg {% if form.title.errors %}is-invalid{% endif %}" 
+                           id="title" 
+                           name="title" 
+                           value="{{ form.title.value|default:'' }}"
+                           placeholder="请输入文章标题" 
+                           required>
+                    {% if form.title.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.title.errors.0 }}
+                        </div>
+                    {% endif %}
                 </div>
                 
+                <!-- 文章内容 -->
                 <div class="mb-4">
                     <label for="content" class="form-label">文章内容</label>
-                    <textarea class="form-control" id="content" name="content" rows="10" required></textarea>
+                    <textarea class="form-control {% if form.content.errors %}is-invalid{% endif %}" 
+                              id="content" 
+                              name="content" 
+                              rows="10" 
+                              required>{{ form.content.value|default:'' }}</textarea>
+                    {% if form.content.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.content.errors.0 }}
+                        </div>
+                    {% endif %}
                     <script>
                         CKEDITOR.replace('content');
                     </script>
                 </div>
                 
                 <div class="row mb-4">
+                    <!-- 文章分类 -->
                     <div class="col-md-6">
                         <label for="category" class="form-label">文章分类</label>
-                        <select class="form-select" id="category" name="category" required>
-                            <option value="" disabled selected>请选择分类</option>
-                            <option value="技术分享">技术分享</option>
-                            <option value="生活随笔">生活随笔</option>
-                            <option value="学习笔记">学习笔记</option>
-                            <option value="项目经验">项目经验</option>
+                        <select class="form-select {% if form.category.errors %}is-invalid{% endif %}" 
+                                id="category" 
+                                name="category" 
+                                required>
+                            <option value="" disabled {% if not form.category.value %}selected{% endif %}>请选择分类</option>
+                            <option value="技术分享" {% if form.category.value == '技术分享' %}selected{% endif %}>技术分享</option>
+                            <option value="生活随笔" {% if form.category.value == '生活随笔' %}selected{% endif %}>生活随笔</option>
+                            <option value="学习笔记" {% if form.category.value == '学习笔记' %}selected{% endif %}>学习笔记</option>
+                            <option value="项目经验" {% if form.category.value == '项目经验' %}selected{% endif %}>项目经验</option>
                         </select>
+                        {% if form.category.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.category.errors.0 }}
+                            </div>
+                        {% endif %}
                     </div>
                     
+                    <!-- 文章状态 -->
                     <div class="col-md-6">
                         <label for="status" class="form-label">文章状态</label>
-                        <select class="form-select" id="status" name="status" required>
-                            <option value="published">已发布</option>
-                            <option value="draft">草稿</option>
+                        <select class="form-select {% if form.status.errors %}is-invalid{% endif %}" 
+                                id="status" 
+                                name="status" 
+                                required>
+                            <option value="published" {% if form.status.value == 'published' or not form.status.value %}selected{% endif %}>已发布</option>
+                            <option value="draft" {% if form.status.value == 'draft' %}selected{% endif %}>草稿</option>
                         </select>
+                        {% if form.status.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.status.errors.0 }}
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
                 
+                <!-- 文章标签 -->
                 <div class="mb-4">
                     <label for="tags" class="form-label">文章标签</label>
-                    <input type="text" class="form-control" id="tags" name="tags" placeholder="请输入标签，多个标签用逗号分隔">
+                    <input type="text" 
+                           class="form-control {% if form.tags.errors %}is-invalid{% endif %}" 
+                           id="tags" 
+                           name="tags" 
+                           value="{{ form.tags.value|default:'' }}"
+                           placeholder="请输入标签，多个标签用逗号分隔">
+                    {% if form.tags.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.tags.errors.0 }}
+                        </div>
+                    {% endif %}
                     <small class="form-text text-muted">例如：Python, Django, Web开发</small>
                 </div>
                 
+                <!-- 特色图片 -->
                 <div class="mb-4">
                     <label for="feature_image" class="form-label">特色图片</label>
-                    <input type="file" class="form-control" id="feature_image" name="feature_image" accept="image/*">
+                    <input type="file" 
+                           class="form-control {% if form.feature_image.errors %}is-invalid{% endif %}" 
+                           id="feature_image" 
+                           name="feature_image" 
+                           accept="image/*">
+                    {% if form.feature_image.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.feature_image.errors.0 }}
+                        </div>
+                    {% endif %}
                     <small class="form-text text-muted">建议尺寸：800x450px，支持JPG、PNG、GIF格式</small>
                 </div>
                 
+                <!-- 文章摘要 -->
                 <div class="mb-4">
                     <label for="summary" class="form-label">文章摘要</label>
-                    <textarea class="form-control" id="summary" name="summary" rows="3" placeholder="请输入文章摘要"></textarea>
+                    <textarea class="form-control {% if form.summary.errors %}is-invalid{% endif %}" 
+                              id="summary" 
+                              name="summary" 
+                              rows="3" 
+                              placeholder="请输入文章摘要">{{ form.summary.value|default:'' }}</textarea>
+                    {% if form.summary.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.summary.errors.0 }}
+                        </div>
+                    {% endif %}
                     <small class="form-text text-muted">摘要会显示在文章列表页，建议控制在150-200字</small>
+                </div>
+                
+                <!-- 发布时间 -->
+                <div class="mb-4">
+                    <label for="published_at" class="form-label">发布时间</label>
+                    <input type="datetime-local" 
+                           class="form-control {% if form.published_at.errors %}is-invalid{% endif %}" 
+                           id="published_at" 
+                           name="published_at" 
+                           value="{{ form.published_at.value|date:'Y-m-d\TH:i'|default:'' }}"
+                           required>
+                    {% if form.published_at.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.published_at.errors.0 }}
+                        </div>
+                    {% endif %}
                 </div>
                 
                 <div class="d-flex justify-content-end gap-3">

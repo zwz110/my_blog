@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from .forms import UserRegisterForm,UserLoginForm,FindPasswordForm,ResetPasswordForm
+from blog.forms import PostForm
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.http import HttpResponse,JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -189,3 +190,24 @@ def my_posts(request):
         messages.error(request, '请先登录')
         return redirect('user:login')
     return render(request, 'html/my_posts.html')
+
+def create_post(request):
+    # 创建文章视图
+    if not request.user.is_authenticated:
+        messages.error(request, '请先登录')
+        return redirect('user:login')
+    
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+            # 保存标签
+            form.save_m2m()
+            messages.success(request, '文章创建成功')
+            return redirect('user:my_posts')
+    else:
+        form = PostForm()
+    
+    return render(request, 'html/create_post.html', {'form': form})

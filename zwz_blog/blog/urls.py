@@ -7,5 +7,5 @@ urlpatterns=[
     path('about/',blog_v.about,name='about'),
     path('category/',blog_v.category,name='category'),
     path('tag/',blog_v.tag,name='tag'),
-    path('creatpost/',blog_v.create_post,name='create_post')
+    path('<int:year>/<int:month>/<int:day>/<slug:slug>/',blog_v.post_detail,name='post_detail'),
 ]

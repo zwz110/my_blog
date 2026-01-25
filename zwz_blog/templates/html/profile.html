@@ -112,7 +112,7 @@
                         <a class="nav-link" href="{% url 'blog:index' %}">首页</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">分类</a>
+                        <a class="nav-link" href="{% url 'blog:category' %}">分类</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'blog:tag' %}">标签</a>
@@ -241,7 +241,7 @@
                         <h3>
                             <i class="fas fa-file-alt mr-2"></i> 我的文章
                         </h3>
-                        <a href="#" class="btn btn-success">
+                        <a href="{% url 'user:create_post' %}" class="btn btn-success">
                             <i class="fas fa-plus mr-1"></i> 发布文章
                         </a>
                     </div>
