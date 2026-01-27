@@ -41,34 +41,68 @@ def index(request):
     
     return render(request, 'blog/index.html', context)
 
-def category(request):
-    """分类页面视图，显示所有分类及其文章"""
-    # 获取所有分类及其数量
-    categories_with_posts = []
-    categories = Post.objects.filter(status='published').values('category').annotate(count=Count('category')).order_by('-count')
+def category(request, category_name=None):
+    """分类页面视图，显示所有分类及其文章或特定分类的文章"""
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
     
-    # 为每个分类获取最新的3篇文章
-    for cat in categories:
-        category_name = cat['category']
-        posts = Post.objects.filter(
+    if category_name:
+        # 显示特定分类的文章（带分页）
+        posts_list = Post.objects.filter(
             category=category_name,
             status='published',
             author__isnull=False,
             slug__isnull=False
-        ).exclude(slug='').select_related('author').order_by('-published_at')[:3]
+        ).exclude(slug='').select_related('author').order_by('-published_at')
         
-        # 将分类信息和文章一起添加到列表中
-        categories_with_posts.append({
-            'category': category_name,
-            'count': cat['count'],
-            'posts': posts
-        })
-    
-    context = {
-        'categories_with_posts': categories_with_posts,
-    }
-    
-    return render(request, 'html/category.html', context)
+        # 分页设置：每页显示5篇文章
+        paginator = Paginator(posts_list, 5)
+        page = request.GET.get('page', 1)
+        
+        try:
+            posts = paginator.page(page)
+        except PageNotAnInteger:
+            posts = paginator.page(1)
+        except EmptyPage:
+            posts = paginator.page(paginator.num_pages)
+        
+        # 获取所有分类及其数量（用于侧边栏）
+        all_categories = Post.objects.filter(status='published').values('category').annotate(count=Count('category')).order_by('-count')
+        
+        context = {
+            'category_name': category_name,
+            'posts': posts,
+            'all_categories': all_categories,
+            'is_category_detail': True
+        }
+        
+        return render(request, 'html/category_detail.html', context)
+    else:
+        # 显示所有分类及其文章
+        categories_with_posts = []
+        categories = Post.objects.filter(status='published').values('category').annotate(count=Count('category')).order_by('-count')
+        
+        # 为每个分类获取最新的3篇文章
+        for cat in categories:
+            category_name = cat['category']
+            posts = Post.objects.filter(
+                category=category_name,
+                status='published',
+                author__isnull=False,
+                slug__isnull=False
+            ).exclude(slug='').select_related('author').order_by('-published_at')[:3]
+            
+            # 将分类信息和文章一起添加到列表中
+            categories_with_posts.append({
+                'category': category_name,
+                'count': cat['count'],
+                'posts': posts
+            })
+        
+        context = {
+            'categories_with_posts': categories_with_posts,
+        }
+        
+        return render(request, 'html/category.html', context)
 def tag(request):
     return render(request,'html/tag.html')
 
