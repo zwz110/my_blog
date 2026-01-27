@@ -103,11 +103,58 @@ def category(request, category_name=None):
         }
         
         return render(request, 'html/category.html', context)
-def tag(request):
-    return render(request,'html/tag.html')
+def tag(request, tag_name=None):
+    """标签页面视图，显示所有标签或特定标签的文章"""
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    from taggit.models import Tag
+    
+    if tag_name:
+        # 显示特定标签的文章（带分页）
+        posts_list = Post.objects.filter(
+            tags__name=tag_name,
+            status='published',
+            author__isnull=False,
+            slug__isnull=False
+        ).exclude(slug='').select_related('author').order_by('-published_at')
+        
+        # 分页设置：每页显示5篇文章
+        paginator = Paginator(posts_list, 5)
+        page = request.GET.get('page', 1)
+        
+        try:
+            posts = paginator.page(page)
+        except PageNotAnInteger:
+            posts = paginator.page(1)
+        except EmptyPage:
+            posts = paginator.page(paginator.num_pages)
+        
+        # 获取所有标签及其数量（用于侧边栏）
+        all_tags = Tag.objects.annotate(
+            count=Count('taggit_taggeditem_items')
+        ).order_by('-count')
+        
+        context = {
+            'tag_name': tag_name,
+            'posts': posts,
+            'all_tags': all_tags,
+            'is_tag_detail': True
+        }
+        
+        return render(request, 'html/tag_detail.html', context)
+    else:
+        # 显示所有标签
+        from taggit.models import Tag
+        tags = Tag.objects.annotate(
+            count=Count('taggit_taggeditem_items')
+        ).order_by('-count')
+        
+        context = {
+            'tags': tags,
+        }
+        
+        return render(request, 'html/tag.html', context)
 
 def post_detail(request, year, month, day, slug):
-    from django.shortcuts import get_object_or_404
     from .models import Post
     from django.utils import timezone
     

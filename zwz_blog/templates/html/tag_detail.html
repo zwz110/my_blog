@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文章标签 - ZwZ Blog</title>
+    <title>{{ tag_name }} - ZwZ Blog</title>
     <!-- 引入Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <!-- 引入Font Awesome图标库 -->
@@ -35,6 +35,25 @@
             margin-bottom: 30px;
         }
         
+        /* 文章卡片样式 */
+        .post-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .post-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        /* 文章内容样式 */
+        .post-content {
+            padding: 20px;
+        }
+        
         /* 标题样式 */
         .section-title {
             position: relative;
@@ -50,6 +69,31 @@
             width: 60px;
             height: 3px;
             background-color: #007bff;
+        }
+        
+        /* 标签样式 */
+        .badge-custom {
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        
+        /* 侧边栏样式 */
+        .sidebar {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
         }
         
         /* 标签云样式 */
@@ -111,50 +155,26 @@
         
         .tag-list-item {
             transition: background-color 0.2s ease;
-            padding: 12px 16px;
+            padding: 10px 15px;
             border-radius: 6px;
-            margin-bottom: 10px;
-            border: 1px solid #f0f0f0;
+            margin-bottom: 8px;
         }
         
         .tag-list-item:hover {
             background-color: #f8f9fa;
-            border-color: #e9ecef;
+        }
+        
+        .tag-list-item.active {
+            background-color: #e9ecef;
+            font-weight: 600;
         }
         
         .tag-list-item a {
+            color: #495057;
+            text-decoration: none;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            text-decoration: none;
-            color: #495057;
-        }
-        
-        .tag-count {
-            font-size: 0.8rem;
-            padding: 2px 8px;
-            border-radius: 10px;
-            background-color: #e9ecef;
-        }
-        
-        /* 文章列表项样式 */
-        .post-item {
-            transition: background-color 0.2s ease;
-            padding: 15px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        
-        .post-item:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .post-item:last-child {
-            border-bottom: none;
-        }
-        
-        /* 标签详情样式 */
-        .tag-detail {
-            margin-top: 30px;
         }
         
         /* 空状态样式 */
@@ -233,51 +253,136 @@
 
     <!-- 标签页面内容 -->
     <div class="container tag-container">
-        <!-- 页面标题 -->
-        <div class="tag-card">
-            <h2 class="section-title">
-                <i class="fas fa-tags mr-2"></i> 文章标签
-            </h2>
-            <p class="lead">通过标签浏览我们的文章内容。</p>
-        </div>
-        
-        <!-- 标签云 -->
-        <div class="tag-card">
-            <h3 class="mb-4">
-                <i class="fas fa-cloud mr-2"></i> 标签云
-            </h3>
-            <div class="tag-cloud">
-                {% for tag in tags %}
-                    {% if tag.count >= 20 %}
-                        <a href="{% url 'blog:tag_detail' tag.name %}" class="tag-size-5">{{ tag.name }}</a>
-                    {% elif tag.count >= 15 %}
-                        <a href="{% url 'blog:tag_detail' tag.name %}" class="tag-size-4">{{ tag.name }}</a>
-                    {% elif tag.count >= 10 %}
-                        <a href="{% url 'blog:tag_detail' tag.name %}" class="tag-size-3">{{ tag.name }}</a>
-                    {% elif tag.count >= 5 %}
-                        <a href="{% url 'blog:tag_detail' tag.name %}" class="tag-size-2">{{ tag.name }}</a>
-                    {% else %}
-                        <a href="{% url 'blog:tag_detail' tag.name %}" class="tag-size-1">{{ tag.name }}</a>
-                    {% endif %}
-                {% empty %}
-                    <p class="text-muted text-center">暂无标签</p>
-                {% endfor %}
-            </div>
-        </div>
-        
         <div class="row">
-            <!-- 标签列表 -->
-            <div class="col-md-4">
+            <!-- 主内容区 -->
+            <div class="col-lg-8">
+                <!-- 页面标题 -->
                 <div class="tag-card">
-                    <h3 class="mb-4">
-                        <i class="fas fa-list mr-2"></i> 标签列表
-                    </h3>
+                    <h2 class="section-title">
+                        <i class="fas fa-tag mr-2"></i> {{ tag_name }}
+                    </h2>
+                    <p class="lead">查看所有带有 "{{ tag_name }}" 标签的文章</p>
+                </div>
+                
+                <!-- 文章列表 -->
+                {% if posts %}
+                    {% for post in posts %}
+                    <div class="post-card">
+                        <div class="post-content">
+                            <h3>
+                                <a href="{{ post.get_absolute_url }}" class="text-dark text-decoration-none">{{ post.title }}</a>
+                            </h3>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="text-muted">
+                                    <i class="fas fa-user mr-1"></i> {{ post.author.username }}
+                                    <i class="fas fa-calendar-alt ml-3 mr-1"></i> {{ post.published_at|date:'Y-m-d' }}
+                                </span>
+                                {% if post.category == '技术分享' %}
+                                    <span class="badge-custom bg-primary">{{ post.category }}</span>
+                                {% elif post.category == '生活随笔' %}
+                                    <span class="badge-custom bg-success">{{ post.category }}</span>
+                                {% elif post.category == '学习笔记' %}
+                                    <span class="badge-custom bg-warning text-dark">{{ post.category }}</span>
+                                {% elif post.category == '项目经验' %}
+                                    <span class="badge-custom bg-info">{{ post.category }}</span>
+                                {% else %}
+                                    <span class="badge-custom bg-secondary">{{ post.category }}</span>
+                                {% endif %}
+                            </div>
+                            <p class="text-muted mb-4">
+                                {% if post.summary %}
+                                    {{ post.summary|truncatechars:200 }}
+                                {% else %}
+                                    {{ post.content|striptags|truncatechars:200 }}
+                                {% endif %}
+                            </p>
+                            <a href="{{ post.get_absolute_url }}" class="btn btn-outline-primary">
+                                阅读更多 <i class="fas fa-arrow-right ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <!-- 分页 -->
+                    {% if posts.has_other_pages %}
+                    <nav aria-label="Page navigation example" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if posts.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ posts.previous_page_number }}" tabindex="-1">上一页</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">上一页</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in posts.paginator.page_range %}
+                                {% if posts.number == num %}
+                                <li class="page-item active" aria-current="page">
+                                    <a class="page-link" href="#">{{ num }}</a>
+                                </li>
+                                {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if posts.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ posts.next_page_number }}">下一页</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" aria-disabled="true">下一页</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-file-alt"></i>
+                        <h3>暂无文章</h3>
+                        <p>该标签下还没有文章，敬请期待。</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- 侧边栏 -->
+            <div class="col-lg-4">
+                <!-- 标签云 -->
+                <div class="sidebar mb-5">
+                    <h5 class="sidebar-title mb-4">热门标签</h5>
+                    <div class="tag-cloud">
+                        {% for tag in all_tags %}
+                            {% if tag.count >= 20 %}
+                                <a href="{% url 'blog:tag_detail' tag.name %}" class="tag-size-5 {% if tag.name == tag_name %}active{% endif %}">{{ tag.name }}</a>
+                            {% elif tag.count >= 15 %}
+                                <a href="{% url 'blog:tag_detail' tag.name %}" class="tag-size-4 {% if tag.name == tag_name %}active{% endif %}">{{ tag.name }}</a>
+                            {% elif tag.count >= 10 %}
+                                <a href="{% url 'blog:tag_detail' tag.name %}" class="tag-size-3 {% if tag.name == tag_name %}active{% endif %}">{{ tag.name }}</a>
+                            {% elif tag.count >= 5 %}
+                                <a href="{% url 'blog:tag_detail' tag.name %}" class="tag-size-2 {% if tag.name == tag_name %}active{% endif %}">{{ tag.name }}</a>
+                            {% else %}
+                                <a href="{% url 'blog:tag_detail' tag.name %}" class="tag-size-1 {% if tag.name == tag_name %}active{% endif %}">{{ tag.name }}</a>
+                            {% endif %}
+                        {% empty %}
+                            <p class="text-muted text-center">暂无标签</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- 标签列表 -->
+                <div class="sidebar">
+                    <h5 class="sidebar-title mb-4">标签列表</h5>
                     <ul class="tag-list">
-                        {% for tag in tags %}
-                        <li class="tag-list-item">
+                        {% for tag in all_tags %}
+                        <li class="tag-list-item {% if tag.name == tag_name %}active{% endif %}">
                             <a href="{% url 'blog:tag_detail' tag.name %}">
                                 <span>{{ tag.name }}</span>
-                                <span class="tag-count">{{ tag.count }}</span>
+                                <span class="badge badge-secondary">{{ tag.count }}</span>
                             </a>
                         </li>
                         {% empty %}
@@ -286,23 +391,9 @@
                         </li>
                         {% endfor %}
                     </ul>
-                    <div class="text-center mt-4">
-                        <a href="#" class="btn btn-outline-primary">
-                            查看全部标签
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
-        
-        <!-- 空状态（当没有标签时显示） -->
-        {% if not tags %}
-        <div class="empty-state">
-            <i class="fas fa-tags"></i>
-            <h3>暂无标签</h3>
-            <p>网站还没有创建任何标签，敬请期待。</p>
-        </div>
-        {% endif %}
     </div>
 
     <!-- 退出登录模态框 -->
