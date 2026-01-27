@@ -309,7 +309,7 @@
                     <ul class="list-unstyled">
                         {% for category in categories %}
                         <li class="mb-2">
-                            <a href="#" class="text-dark text-decoration-none d-flex justify-content-between">
+                            <a href="{% url 'blog:category' %}" class="text-dark text-decoration-none d-flex justify-content-between">
                                 <span>{{ category.category }}</span>
                                 {% if category.category == '技术分享' %}
                                     <span class="badge badge-primary">{{ category.count }}</span>
@@ -334,14 +334,14 @@
                 <div class="sidebar">
                     <h5 class="sidebar-title mb-4">标签云</h5>
                     <div class="d-flex flex-wrap">
-                        <a href="#" class="btn btn-sm btn-primary m-1">Python</a>
-                        <a href="#" class="btn btn-sm btn-secondary m-1">Django</a>
-                        <a href="#" class="btn btn-sm btn-success m-1">前端开发</a>
-                        <a href="#" class="btn btn-sm btn-info m-1">JavaScript</a>
-                        <a href="#" class="btn btn-sm btn-warning m-1">数据库</a>
-                        <a href="#" class="btn btn-sm btn-danger m-1">Linux</a>
-                        <a href="#" class="btn btn-sm btn-light m-1">Git</a>
-                        <a href="#" class="btn btn-sm btn-dark m-1">算法</a>
+                        <a href="{% url 'blog:tag' %}" class="btn btn-sm btn-primary m-1">Python</a>
+                        <a href="{% url 'blog:tag' %}" class="btn btn-sm btn-secondary m-1">Django</a>
+                        <a href="{% url 'blog:tag' %}" class="btn btn-sm btn-success m-1">前端开发</a>
+                        <a href="{% url 'blog:tag' %}" class="btn btn-sm btn-info m-1">JavaScript</a>
+                        <a href="{% url 'blog:tag' %}" class="btn btn-sm btn-warning m-1">数据库</a>
+                        <a href="{% url 'blog:tag' %}" class="btn btn-sm btn-danger m-1">Linux</a>
+                        <a href="{% url 'blog:tag' %}" class="btn btn-sm btn-light m-1">Git</a>
+                        <a href="{% url 'blog:tag' %}" class="btn btn-sm btn-dark m-1">算法</a>
                     </div>
                 </div>
             </div>

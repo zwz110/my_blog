@@ -23,7 +23,7 @@ class Post(models.Model):
     )
     
     title = models.CharField(max_length=200, verbose_name='标题')
-    slug = models.SlugField(max_length=200, unique_for_date='published_at', verbose_name='slug')
+    slug = models.SlugField(max_length=200, unique_for_date='published_at', blank=True, null=True, verbose_name='slug')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_posts', verbose_name='作者')
     content = models.TextField(verbose_name='内容')
     summary = models.CharField(max_length=500, blank=True, verbose_name='摘要')
@@ -51,9 +51,17 @@ class Post(models.Model):
             'slug': self.slug
         })
     def save(self, *args, **kwargs):
-        # 自动生成 slug：如果为空，用标题生成
         if not self.slug:
-            self.slug = slugify(self.title)
+            if self.title:
+                generated_slug = slugify(self.title)
+                if not generated_slug or generated_slug.strip() == '':
+                    import time
+                    self.slug = f'post-{int(time.time())}'
+                else:
+                    self.slug = generated_slug
+            else:
+                import time
+                self.slug = f'post-{int(time.time())}'
         super().save(*args, **kwargs)
 
 class Comment(models.Model):

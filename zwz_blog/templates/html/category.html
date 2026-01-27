@@ -197,237 +197,108 @@
         
         <!-- 分类列表 -->
         <div class="row">
-            <!-- 分类1：技术分享 -->
+            {% for item in categories_with_posts %}
             <div class="col-md-6">
                 <div class="category-item">
                     <div class="category-header">
                         <div class="d-flex justify-content-between align-items-center">
                             <h3>
-                                <i class="fas fa-laptop-code mr-2"></i> 技术分享
+                                {% if item.category == '技术分享' %}
+                                    <i class="fas fa-laptop-code mr-2"></i>
+                                {% elif item.category == '生活随笔' %}
+                                    <i class="fas fa-coffee mr-2"></i>
+                                {% elif item.category == '学习笔记' %}
+                                    <i class="fas fa-book mr-2"></i>
+                                {% elif item.category == '项目经验' %}
+                                    <i class="fas fa-project-diagram mr-2"></i>
+                                {% else %}
+                                    <i class="fas fa-folder mr-2"></i>
+                                {% endif %}
+                                {{ item.category }}
                             </h3>
-                            <span class="badge badge-primary">12 篇文章</span>
+                            {% if item.category == '技术分享' %}
+                                <span class="badge badge-primary">{{ item.count }} 篇文章</span>
+                            {% elif item.category == '生活随笔' %}
+                                <span class="badge badge-success">{{ item.count }} 篇文章</span>
+                            {% elif item.category == '学习笔记' %}
+                                <span class="badge badge-warning text-dark">{{ item.count }} 篇文章</span>
+                            {% elif item.category == '项目经验' %}
+                                <span class="badge badge-info">{{ item.count }} 篇文章</span>
+                            {% else %}
+                                <span class="badge badge-secondary">{{ item.count }} 篇文章</span>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="category-content">
                         <div class="post-list">
-                            <!-- 文章项1 -->
+                            {% for post in item.posts %}
                             <div class="post-item">
-                                <a href="#" class="text-dark text-decoration-none">
-                                    <h5 class="mb-1">Django框架入门指南</h5>
-                                    <p class="text-muted mb-2">Django是一个高级Python Web框架，鼓励快速开发和简洁实用的设计...</p>
+                                <a href="{{ post.get_absolute_url }}" class="text-dark text-decoration-none">
+                                    <h5 class="mb-1">{{ post.title }}</h5>
+                                    <p class="text-muted mb-2">
+                                        {% if post.summary %}
+                                            {{ post.summary|truncatechars:100 }}
+                                        {% else %}
+                                            {{ post.content|striptags|truncatechars:100 }}
+                                        {% endif %}
+                                    </p>
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">2026-01-19</small>
-                                        <span class="badge-custom bg-primary">技术分享</span>
+                                        <small class="text-muted">{{ post.published_at|date:'Y-m-d' }}</small>
+                                        {% if post.category == '技术分享' %}
+                                            <span class="badge-custom bg-primary">{{ post.category }}</span>
+                                        {% elif post.category == '生活随笔' %}
+                                            <span class="badge-custom bg-success">{{ post.category }}</span>
+                                        {% elif post.category == '学习笔记' %}
+                                            <span class="badge-custom bg-warning text-dark">{{ post.category }}</span>
+                                        {% elif post.category == '项目经验' %}
+                                            <span class="badge-custom bg-info">{{ post.category }}</span>
+                                        {% else %}
+                                            <span class="badge-custom bg-secondary">{{ post.category }}</span>
+                                        {% endif %}
                                     </div>
                                 </a>
                             </div>
-                            
-                            <!-- 文章项2 -->
+                            {% empty %}
                             <div class="post-item">
-                                <a href="#" class="text-dark text-decoration-none">
-                                    <h5 class="mb-1">Python高级特性详解</h5>
-                                    <p class="text-muted mb-2">Python有许多强大的高级特性，如装饰器、生成器、上下文管理器等...</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">2026-01-17</small>
-                                        <span class="badge-custom bg-warning text-dark">学习笔记</span>
-                                    </div>
-                                </a>
+                                <p class="text-muted text-center">暂无文章</p>
                             </div>
-                            
-                            <!-- 文章项3 -->
-                            <div class="post-item">
-                                <a href="#" class="text-dark text-decoration-none">
-                                    <h5 class="mb-1">前端开发最佳实践</h5>
-                                    <p class="text-muted mb-2">前端开发领域发展迅速，本文总结了一些前端开发的最佳实践...</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">2026-01-16</small>
-                                        <span class="badge-custom bg-info">技术分享</span>
-                                    </div>
-                                </a>
-                            </div>
+                            {% endfor %}
                         </div>
                         <div class="view-more text-center">
-                            <a href="#" class="btn btn-outline-primary">
-                                查看全部 <i class="fas fa-arrow-right ml-1"></i>
-                            </a>
+                            {% if item.category == '技术分享' %}
+                                <a href="#" class="btn btn-outline-primary">
+                                    查看全部 <i class="fas fa-arrow-right ml-1"></i>
+                                </a>
+                            {% elif item.category == '生活随笔' %}
+                                <a href="#" class="btn btn-outline-success">
+                                    查看全部 <i class="fas fa-arrow-right ml-1"></i>
+                                </a>
+                            {% elif item.category == '学习笔记' %}
+                                <a href="#" class="btn btn-outline-warning">
+                                    查看全部 <i class="fas fa-arrow-right ml-1"></i>
+                                </a>
+                            {% elif item.category == '项目经验' %}
+                                <a href="#" class="btn btn-outline-info">
+                                    查看全部 <i class="fas fa-arrow-right ml-1"></i>
+                                </a>
+                            {% else %}
+                                <a href="#" class="btn btn-outline-secondary">
+                                    查看全部 <i class="fas fa-arrow-right ml-1"></i>
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- 分类2：生活随笔 -->
-            <div class="col-md-6">
-                <div class="category-item">
-                    <div class="category-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h3>
-                                <i class="fas fa-coffee mr-2"></i> 生活随笔
-                            </h3>
-                            <span class="badge badge-success">8 篇文章</span>
-                        </div>
-                    </div>
-                    <div class="category-content">
-                        <div class="post-list">
-                            <!-- 文章项1 -->
-                            <div class="post-item">
-                                <a href="#" class="text-dark text-decoration-none">
-                                    <h5 class="mb-1">程序员的周末生活</h5>
-                                    <p class="text-muted mb-2">作为一名程序员，周末的时间如何度过？是继续写代码，还是出门放松？...</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">2026-01-18</small>
-                                        <span class="badge-custom bg-success">生活随笔</span>
-                                    </div>
-                                </a>
-                            </div>
-                            
-                            <!-- 文章项2 -->
-                            <div class="post-item">
-                                <a href="#" class="text-dark text-decoration-none">
-                                    <h5 class="mb-1">技术人的读书清单</h5>
-                                    <p class="text-muted mb-2">作为一名技术人员，除了技术书籍，我们还应该读哪些书？...</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">2026-01-14</small>
-                                        <span class="badge-custom bg-success">生活随笔</span>
-                                    </div>
-                                </a>
-                            </div>
-                            
-                            <!-- 文章项3 -->
-                            <div class="post-item">
-                                <a href="#" class="text-dark text-decoration-none">
-                                    <h5 class="mb-1">如何平衡工作与学习</h5>
-                                    <p class="text-muted mb-2">在快节奏的工作环境中，如何平衡工作和学习的时间？...</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">2026-01-12</small>
-                                        <span class="badge-custom bg-success">生活随笔</span>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="view-more text-center">
-                            <a href="#" class="btn btn-outline-success">
-                                查看全部 <i class="fas fa-arrow-right ml-1"></i>
-                            </a>
-                        </div>
-                    </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="fas fa-folder-open"></i>
+                    <h3>暂无分类</h3>
+                    <p>网站还没有创建任何分类，敬请期待。</p>
                 </div>
             </div>
-            
-            <!-- 分类3：学习笔记 -->
-            <div class="col-md-6">
-                <div class="category-item">
-                    <div class="category-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h3>
-                                <i class="fas fa-book mr-2"></i> 学习笔记
-                            </h3>
-                            <span class="badge badge-warning text-dark">15 篇文章</span>
-                        </div>
-                    </div>
-                    <div class="category-content">
-                        <div class="post-list">
-                            <!-- 文章项1 -->
-                            <div class="post-item">
-                                <a href="#" class="text-dark text-decoration-none">
-                                    <h5 class="mb-1">Python高级特性详解</h5>
-                                    <p class="text-muted mb-2">Python有许多强大的高级特性，如装饰器、生成器、上下文管理器等...</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">2026-01-17</small>
-                                        <span class="badge-custom bg-warning text-dark">学习笔记</span>
-                                    </div>
-                                </a>
-                            </div>
-                            
-                            <!-- 文章项2 -->
-                            <div class="post-item">
-                                <a href="#" class="text-dark text-decoration-none">
-                                    <h5 class="mb-1">数据库优化技巧</h5>
-                                    <p class="text-muted mb-2">数据库优化是Web应用性能优化的重要组成部分...</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">2026-01-15</small>
-                                        <span class="badge-custom bg-primary">技术分享</span>
-                                    </div>
-                                </a>
-                            </div>
-                            
-                            <!-- 文章项3 -->
-                            <div class="post-item">
-                                <a href="#" class="text-dark text-decoration-none">
-                                    <h5 class="mb-1">算法学习笔记：排序算法</h5>
-                                    <p class="text-muted mb-2">排序算法是算法学习的基础，本文总结了常见的排序算法...</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">2026-01-10</small>
-                                        <span class="badge-custom bg-warning text-dark">学习笔记</span>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="view-more text-center">
-                            <a href="#" class="btn btn-outline-warning">
-                                查看全部 <i class="fas fa-arrow-right ml-1"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 分类4：项目经验 -->
-            <div class="col-md-6">
-                <div class="category-item">
-                    <div class="category-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h3>
-                                <i class="fas fa-project-diagram mr-2"></i> 项目经验
-                            </h3>
-                            <span class="badge badge-info">6 篇文章</span>
-                        </div>
-                    </div>
-                    <div class="category-content">
-                        <div class="post-list">
-                            <!-- 文章项1 -->
-                            <div class="post-item">
-                                <a href="#" class="text-dark text-decoration-none">
-                                    <h5 class="mb-1">如何构建一个高可用的Web应用</h5>
-                                    <p class="text-muted mb-2">构建高可用的Web应用需要考虑哪些因素？本文分享我的经验...</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">2026-01-09</small>
-                                        <span class="badge-custom bg-info">项目经验</span>
-                                    </div>
-                                </a>
-                            </div>
-                            
-                            <!-- 文章项2 -->
-                            <div class="post-item">
-                                <a href="#" class="text-dark text-decoration-none">
-                                    <h5 class="mb-1">大型项目的代码组织方式</h5>
-                                    <p class="text-muted mb-2">随着项目规模的扩大，如何组织代码结构变得越来越重要...</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">2026-01-07</small>
-                                        <span class="badge-custom bg-info">项目经验</span>
-                                    </div>
-                                </a>
-                            </div>
-                            
-                            <!-- 文章项3 -->
-                            <div class="post-item">
-                                <a href="#" class="text-dark text-decoration-none">
-                                    <h5 class="mb-1">前后端分离项目的实践</h5>
-                                    <p class="text-muted mb-2">前后端分离是现代Web开发的趋势，本文分享我的实践经验...</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">2026-01-05</small>
-                                        <span class="badge-custom bg-info">项目经验</span>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="view-more text-center">
-                            <a href="#" class="btn btn-outline-info">
-                                查看全部 <i class="fas fa-arrow-right ml-1"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
         
         <!-- 空状态（当没有分类时显示） -->
