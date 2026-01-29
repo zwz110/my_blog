@@ -11,5 +11,6 @@ urlpatterns=[
     path('tag/<str:tag_name>/',blog_v.tag,name='tag_detail'),
     path('<int:year>/<int:month>/<int:day>/<slug:slug>/',blog_v.post_detail,name='post_detail'),
     path('search/',blog_v.search,name='search'),
-    path('filter/',blog_v.filter_posts,name='filter_posts')
+    path('filter/',blog_v.filter_posts,name='filter_posts'),
+    path('postdetail/',blog_v.post_detail,name='post_detail'),
 ]

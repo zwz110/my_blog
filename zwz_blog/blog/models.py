@@ -12,6 +12,7 @@ class Post(models.Model):
     STATUS_CHOICES = (
         ('published', '已发布'),
         ('draft', '草稿'),
+        ('pending', '待审核'),
     )
     
     # 文章分类选项
@@ -44,12 +45,16 @@ class Post(models.Model):
         return self.title
     
     def get_absolute_url(self):
-        return reverse('blog:post_detail', kwargs={
-            'year': self.published_at.year,
-            'month':self.published_at.month,  # 1 → "01"
-            'day': self.published_at.day,  # 5 → "05"
-            'slug': self.slug
-        })
+        try:
+            return reverse('blog:post_detail', kwargs={
+                'year': self.published_at.year,
+                'month': self.published_at.month,
+                'day': self.published_at.day,
+                'slug': self.slug
+            })
+        except (AttributeError, ValueError):
+            # 如果 published_at 无效，返回一个默认的 URL
+            return '#'
     def save(self, *args, **kwargs):
         if not self.slug:
             if self.title:

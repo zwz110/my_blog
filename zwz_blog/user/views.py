@@ -183,7 +183,27 @@ def profile(request):
     if not request.user.is_authenticated:
         messages.error(request, '请先登录')
         return redirect('user:login')
-    return render(request, 'html/profile.html')
+    
+    # 获取用户的文章，按创建时间倒序排列
+    from blog.models import Post
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    
+    posts_list = Post.objects.filter(author=request.user).order_by('-created_at')
+    
+    # 分页
+    paginator = Paginator(posts_list, 3)  # 每页3篇文章
+    page = request.GET.get('page')
+    
+    try:
+        posts = paginator.page(page)
+    except PageNotAnInteger:
+        # 如果page不是整数，显示第一页
+        posts = paginator.page(1)
+    except EmptyPage:
+        # 如果page超出范围，显示最后一页
+        posts = paginator.page(paginator.num_pages)
+
+    return render(request, 'html/profile.html', {'posts': posts})
 def my_posts(request):
     # 我的文章视图
     if not request.user.is_authenticated:

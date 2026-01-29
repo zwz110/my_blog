@@ -3,6 +3,7 @@ from django.db.models import Q, Count
 from .forms import MessageForm
 from .models import Message, Post
 from django.views.decorators.http import require_http_methods
+from django.http import JsonResponse
 
 # Create your views here.
 def index(request):
@@ -302,20 +303,65 @@ def filter_posts(request):
     # 构建文章数据
     posts_data = []
     for post in posts_list:
+        # 安全获取绝对URL
+        try:
+            absolute_url = post.get_absolute_url()
+        except Exception:
+            absolute_url = '#'
+        
+        # 安全获取摘要
+        try:
+            summary = post.summary if post.summary else post.content.replace('\n', '').strip()[:150]
+        except Exception:
+            summary = ''
+        
+        # 安全获取创建时间
+        try:
+            created_at = post.created_at.strftime('%Y-%m-%d')
+        except Exception:
+            created_at = ''
+        
+        # 生成编辑URL
+        from django.urls import reverse
+        try:
+            edit_url = reverse('user:edit_post', args=[post.id])
+        except Exception:
+            edit_url = '#'
+        
         posts_data.append({
             'id': post.id,
             'title': post.title,
-            'category': post.category.name if post.category else None,
+            'category': post.category,
             'status': post.status,
             'status_text': '已发布' if post.status == 'published' else '草稿' if post.status == 'draft' else '待审核',
             'status_class': 'bg-success' if post.status == 'published' else 'bg-secondary' if post.status == 'draft' else 'bg-warning text-dark',
-            'summary': post.summary if post.summary else post.content.replace('\n', '').strip()[:150],
-            'created_at': post.created_at.strftime('%Y-%m-%d'),
-            'views': post.views or 0,
+            'summary': summary,
+            'created_at': created_at,
+            'views': 0,
             'comments_count': post.comments.count(),
-            'likes_count': post.likes.count() or 0,
+            'likes_count': 0,
             'is_published': post.status == 'published',
-            'absolute_url': post.get_absolute_url()
+            'absolute_url': absolute_url,
+            'edit_url': edit_url
         })
     
     return JsonResponse({'success': True, 'posts': posts_data})
+
+@require_http_methods(['POST'])
+def delete_post(request):
+    # 删除文章视图
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'message': '请先登录'})
+    
+    post_id = request.POST.get('post_id')
+    if not post_id:
+        return JsonResponse({'success': False, 'message': '缺少文章ID'})
+    
+    try:
+        post = Post.objects.get(id=post_id, author=request.user)
+        post.delete()
+        return JsonResponse({'success': True, 'message': '文章删除成功'})
+    except Post.DoesNotExist:
+        return JsonResponse({'success': False, 'message': '文章不存在或无权删除'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'删除失败：{str(e)}'})
