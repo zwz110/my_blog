@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑文章 - ZwZ Blog</title>
+    <!-- 引入Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- 引入Font Awesome图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- 引入CKEditor -->
+    <script src="https://cdn.ckeditor.com/4.25.1-lts/standard/ckeditor.js"></script>
+    <!-- 自定义样式 -->
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        /* 导航栏样式 */
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* 编辑文章页面容器样式 */
+        .edit-post-container {
+            margin-top: 30px;
+            margin-bottom: 50px;
+        }
+        
+        /* 卡片样式 */
+        .edit-post-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        /* 标题样式 */
+        .section-title {
+            position: relative;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background-color: #007bff;
+        }
+        
+        /* 表单样式 */
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-control {
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        /* 标签输入样式 */
+        .tag-input {
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            padding: 10px;
+            min-height: 100px;
+            background-color: #ffffff;
+        }
+        
+        .tag-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        /* 按钮样式 */
+        .btn-submit {
+            background-color: #007bff;
+            border-color: #007bff;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-submit:hover {
+            background-color: #0069d9;
+            border-color: #0062cc;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+        }
+        
+        .btn-cancel {
+            transition: all 0.3s ease;
+        }
+        
+        .btn-cancel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 提示信息样式 */
+        .alert {
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        /* 加载状态样式 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #ffffff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'blog:index' %}">
+                <strong>ZwZ Blog</strong>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:index' %}">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:category' %}">分类</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:tag' %}">标签</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:about' %}">关于</a>
+                    </li>
+                </ul>
+                
+                <!-- 用户菜单 + 搜索框 -->
+                <div class="d-flex align-items-center">
+                    <!-- 用户认证菜单 -->
+                    <ul class="navbar-nav mr-4">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {{ user.username }}
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                                    <a class="dropdown-item" href="{% url 'user:profile' %}">个人中心</a>
+                                    <a class="dropdown-item" href="{% url 'user:my_posts' %}">我的文章</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">退出登录</a>
+                                </div>
+                            </li>
+                        {% else %}
+                            <li class="nav-item mr-2">
+                                <a class="nav-link" href="{% url 'user:login' %}">登录</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'user:register' %}">注册</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                    <form class="form-inline my-2 my-lg-0" action="{% url 'blog:search' %}" method="get">
+                        <input class="form-control mr-sm-2" type="search" name="search" placeholder="搜索" aria-label="Search">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">搜索</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 编辑文章页面内容 -->
+    <div class="container edit-post-container">
+        <!-- 页面标题 -->
+        <div class="edit-post-card">
+            <h2 class="section-title">
+                <i class="fas fa-edit mr-2"></i> 编辑文章
+            </h2>
+            <p class="lead">修改和完善你的文章内容。</p>
+        </div>
+        
+        <!-- 编辑文章表单 -->
+        <div class="edit-post-card">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- 文章标题 -->
+                <div class="mb-4">
+                    <label for="title" class="form-label">文章标题</label>
+                    <input type="text" 
+                           class="form-control form-control-lg {% if form.title.errors %}is-invalid{% endif %}" 
+                           id="title" 
+                           name="title" 
+                           value="{{ form.title.value|default:post.title }}"
+                           placeholder="请输入文章标题" 
+                           required>
+                    {% if form.title.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.title.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- 文章内容 -->
+                <div class="mb-4">
+                    <label for="content" class="form-label">文章内容</label>
+                    <textarea class="form-control {% if form.content.errors %}is-invalid{% endif %}" 
+                              id="content" 
+                              name="content" 
+                              rows="10" 
+                              required>{{ form.content.value|default:post.content }}</textarea>
+                    {% if form.content.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.content.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <script>
+                        CKEDITOR.replace('content');
+                    </script>
+                </div>
+                
+                <div class="row mb-4">
+                    <!-- 文章分类 -->
+                    <div class="col-md-6">
+                        <label for="category" class="form-label">文章分类</label>
+                        <select class="form-select {% if form.category.errors %}is-invalid{% endif %}" 
+                                id="category" 
+                                name="category" 
+                                required>
+                            <option value="" disabled {% if not form.category.value and not post.category %}selected{% endif %}>请选择分类</option>
+                            <option value="技术分享" {% if form.category.value == '技术分享' or post.category == '技术分享' %}selected{% endif %}>技术分享</option>
+                            <option value="生活随笔" {% if form.category.value == '生活随笔' or post.category == '生活随笔' %}selected{% endif %}>生活随笔</option>
+                            <option value="学习笔记" {% if form.category.value == '学习笔记' or post.category == '学习笔记' %}selected{% endif %}>学习笔记</option>
+                            <option value="项目经验" {% if form.category.value == '项目经验' or post.category == '项目经验' %}selected{% endif %}>项目经验</option>
+                        </select>
+                        {% if form.category.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.category.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- 文章状态 -->
+                    <div class="col-md-6">
+                        <label for="status" class="form-label">文章状态</label>
+                        <select class="form-select {% if form.status.errors %}is-invalid{% endif %}" 
+                                id="status" 
+                                name="status" 
+                                required>
+                            <option value="published" {% if form.status.value == 'published' or post.status == 'published' %}selected{% endif %}>已发布</option>
+                            <option value="draft" {% if form.status.value == 'draft' or post.status == 'draft' %}selected{% endif %}>草稿</option>
+                        </select>
+                        {% if form.status.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.status.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- 文章标签 -->
+                <div class="mb-4">
+                    <label for="tags" class="form-label">文章标签</label>
+                    <input type="text" 
+                           class="form-control {% if form.tags.errors %}is-invalid{% endif %}" 
+                           id="tags" 
+                           name="tags" 
+                           value="{{ form.tags.value|default:post.tags.all|join:',' }}"
+                           placeholder="请输入标签，多个标签用逗号分隔">
+                    {% if form.tags.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.tags.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <small class="form-text text-muted">例如：Python, Django, Web开发</small>
+                </div>
+                
+                <!-- 特色图片 -->
+                <div class="mb-4">
+                    <label for="feature_image" class="form-label">特色图片</label>
+                    <input type="file" 
+                           class="form-control {% if form.feature_image.errors %}is-invalid{% endif %}" 
+                           id="feature_image" 
+                           name="feature_image" 
+                           accept="image/*">
+                    {% if form.feature_image.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.feature_image.errors.0 }}
+                        </div>
+                    {% endif %}
+                    {% if post.feature_image %}
+                        <div class="mt-2">
+                            <small class="form-text text-muted">当前图片：</small>
+                            <img src="{{ post.feature_image.url }}" alt="当前特色图片" style="max-width: 200px; max-height: 150px; margin-top: 5px;">
+                        </div>
+                    {% endif %}
+                    <small class="form-text text-muted">建议尺寸：800x450px，支持JPG、PNG、GIF格式</small>
+                </div>
+                
+                <!-- 文章摘要 -->
+                <div class="mb-4">
+                    <label for="summary" class="form-label">文章摘要</label>
+                    <textarea class="form-control {% if form.summary.errors %}is-invalid{% endif %}" 
+                              id="summary" 
+                              name="summary" 
+                              rows="3" 
+                              placeholder="请输入文章摘要">{{ form.summary.value|default:post.summary }}</textarea>
+                    {% if form.summary.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.summary.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <small class="form-text text-muted">摘要会显示在文章列表页，建议控制在150-200字</small>
+                </div>
+                
+                <!-- 发布时间 -->
+                <div class="mb-4">
+                    <label for="published_at" class="form-label">发布时间</label>
+                    <input type="datetime-local" 
+                           class="form-control {% if form.published_at.errors %}is-invalid{% endif %}" 
+                           id="published_at" 
+                           name="published_at" 
+                           value="{{ form.published_at.value|date:'Y-m-d\TH:i'|default:post.published_at|date:'Y-m-d\TH:i' }}"
+                           required>
+                    {% if form.published_at.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.published_at.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="d-flex justify-content-end gap-3">
+                    <a href="{% url 'user:my_posts' %}" class="btn btn-secondary btn-lg btn-cancel">
+                        <i class="fas fa-times mr-2"></i> 取消
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-lg btn-submit">
+                        <span id="submit-text">
+                            <i class="fas fa-save mr-2"></i> 更新文章
+                        </span>
+                        <span id="loading-spinner" class="loading d-none"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 退出登录模态框 -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">确认退出</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    确定要退出登录吗？
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <form method="post" action="{% url 'user:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">确定退出</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="footer" style="background-color: #343a40; color: #ffffff; padding: 40px 0 20px; margin-top: 60px;">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5>关于ZwZ Blog</h5>
+                    <p>ZwZ Blog是一个分享技术知识和生活感悟的个人博客平台，致力于为读者提供高质量的内容。</p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>快速链接</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'blog:index' %}" class="text-light">首页</a></li>
+                        <li><a href="{% url 'blog:category' %}" class="text-light">分类</a></li>
+                        <li><a href="{% url 'blog:tag' %}" class="text-light">标签</a></li>
+                        <li><a href="{% url 'blog:about' %}" class="text-light">关于我们</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>联系方式</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-envelope mr-2"></i> contact@zwzblog.com</li>
+                        <li><i class="fas fa-phone mr-2"></i> 138-0000-0000</li>
+                        <li><i class="fas fa-map-marker-alt mr-2"></i> 北京市朝阳区</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="bg-secondary">
+            <div class="text-center">
+                <p>&copy; 2026 ZwZ Blog. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 引入JS文件 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 表单提交时显示加载状态
+        $('form').submit(function() {
+            $('#submit-text').addClass('d-none');
+            $('#loading-spinner').removeClass('d-none');
+            $(this).find('button[type="submit"]').prop('disabled', true);
+        });
+        
+        // 标签输入提示
+        $('#tags').on('focus', function() {
+            $(this).attr('placeholder', '例如：Python, Django, Web开发');
+        }).on('blur', function() {
+            if ($(this).val() === '') {
+                $(this).attr('placeholder', '请输入标签，多个标签用逗号分隔');
+            }
+        });
+    </script>
+</body>
+</html>

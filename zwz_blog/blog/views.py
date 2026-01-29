@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.db.models import Q, Count
 from .forms import MessageForm
 from .models import Message, Post
+from django.views.decorators.http import require_http_methods
 
 # Create your views here.
 def index(request):
@@ -281,3 +282,40 @@ def about(request):
         'form': form,
         'messages': approved_messages
     })
+
+@require_http_methods(['GET'])
+def filter_posts(request):
+    # 筛选文章视图
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'message': '请先登录'})
+    
+    status = request.GET.get('status', 'all')
+    
+    # 获取用户的文章，按创建时间倒序排列
+    from blog.models import Post
+    posts_list = Post.objects.filter(author=request.user).order_by('-created_at')
+    
+    # 根据状态筛选
+    if status != 'all':
+        posts_list = posts_list.filter(status=status)
+    
+    # 构建文章数据
+    posts_data = []
+    for post in posts_list:
+        posts_data.append({
+            'id': post.id,
+            'title': post.title,
+            'category': post.category.name if post.category else None,
+            'status': post.status,
+            'status_text': '已发布' if post.status == 'published' else '草稿' if post.status == 'draft' else '待审核',
+            'status_class': 'bg-success' if post.status == 'published' else 'bg-secondary' if post.status == 'draft' else 'bg-warning text-dark',
+            'summary': post.summary if post.summary else post.content.replace('\n', '').strip()[:150],
+            'created_at': post.created_at.strftime('%Y-%m-%d'),
+            'views': post.views or 0,
+            'comments_count': post.comments.count(),
+            'likes_count': post.likes.count() or 0,
+            'is_published': post.status == 'published',
+            'absolute_url': post.get_absolute_url()
+        })
+    
+    return JsonResponse({'success': True, 'posts': posts_data})

@@ -189,7 +189,27 @@ def my_posts(request):
     if not request.user.is_authenticated:
         messages.error(request, '请先登录')
         return redirect('user:login')
-    return render(request, 'html/my_posts.html')
+    
+    # 获取用户的文章，按创建时间倒序排列
+    from blog.models import Post
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    
+    posts_list = Post.objects.filter(author=request.user).order_by('-created_at')
+    
+    # 分页
+    paginator = Paginator(posts_list, 5)  # 每页5篇文章
+    page = request.GET.get('page')
+    
+    try:
+        posts = paginator.page(page)
+    except PageNotAnInteger:
+        # 如果page不是整数，显示第一页
+        posts = paginator.page(1)
+    except EmptyPage:
+        # 如果page超出范围，显示最后一页
+        posts = paginator.page(paginator.num_pages)
+
+    return render(request, 'html/my_posts.html', {'posts': posts})
 
 def create_post(request):
     # 创建文章视图
@@ -211,3 +231,48 @@ def create_post(request):
         form = PostForm()
     
     return render(request, 'html/create_post.html', {'form': form})
+
+def edit_post(request, post_id):
+    # 编辑文章视图
+    if not request.user.is_authenticated:
+        messages.error(request, '请先登录')
+        return redirect('user:login')
+    
+    try:
+        from blog.models import Post
+        post = Post.objects.get(id=post_id, author=request.user)
+    except Post.DoesNotExist:
+        messages.error(request, '文章不存在或无权编辑')
+        return redirect('user:my_posts')
+    
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '文章更新成功')
+            return redirect('user:my_posts')
+    else:
+        form = PostForm(instance=post)
+    
+    return render(request, 'html/edit_post.html', {'form': form, 'post': post})
+
+@require_http_methods(['POST'])
+def delete_post(request):
+    # 删除文章视图
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'message': '请先登录'})
+    
+    post_id = request.POST.get('post_id')
+    if not post_id:
+        return JsonResponse({'success': False, 'message': '缺少文章ID'})
+    
+    try:
+        from blog.models import Post
+        post = Post.objects.get(id=post_id, author=request.user)
+        post.delete()
+        return JsonResponse({'success': True, 'message': '文章删除成功'})
+    except Post.DoesNotExist:
+        return JsonResponse({'success': False, 'message': '文章不存在或无权删除'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'删除失败：{str(e)}'})
+

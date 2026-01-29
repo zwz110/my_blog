@@ -178,233 +178,120 @@
             
             <!-- 文章列表 -->
             <div class="post-list">
-                <!-- 文章项1 -->
-                <div class="post-item">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h4 class="mb-2">
-                                <a href="#" class="text-dark text-decoration-none">Django框架入门指南</a>
-                            </h4>
-                            <div class="d-flex flex-wrap mb-3">
-                                <span class="badge-custom bg-primary mr-2 mb-2">技术分享</span>
-                                <span class="badge-custom bg-success mr-2 mb-2">已发布</span>
-                            </div>
-                            <p class="text-muted mb-3">Django是一个高级Python Web框架，鼓励快速开发和简洁实用的设计。本文将介绍Django的基本概念、安装配置以及如何创建第一个Django应用...</p>
-                            <div class="d-flex flex-wrap align-items-center text-muted">
-                                <span class="mr-4"><i class="far fa-calendar-alt mr-1"></i> 2026-01-19</span>
-                                <span class="mr-4"><i class="far fa-eye mr-1"></i> 120</span>
-                                <span class="mr-4"><i class="far fa-comment mr-1"></i> 8</span>
-                                <span class="mr-4"><i class="far fa-heart mr-1"></i> 15</span>
+                {% if posts %}
+                    {% for post in posts %}
+                        <div class="post-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h4 class="mb-2">
+                                        <a href="{{ post.get_absolute_url }}" class="text-dark text-decoration-none">{{ post.title }}</a>
+                                    </h4>
+                                    <div class="d-flex flex-wrap mb-3">
+                                        {% if post.category %}
+                                            <span class="badge-custom bg-primary mr-2 mb-2">{{ post.category }}</span>
+                                        {% endif %}
+                                        {% if post.status == 'published' %}
+                                            <span class="badge-custom bg-success mr-2 mb-2">已发布</span>
+                                        {% elif post.status == 'draft' %}
+                                            <span class="badge-custom bg-secondary mr-2 mb-2">草稿</span>
+                                        {% else %}
+                                            <span class="badge-custom bg-warning text-dark mr-2 mb-2">待审核</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="text-muted mb-3">
+                                        {% if post.summary %}
+                                            {{ post.summary|truncatechars:150 }}
+                                        {% else %}
+                                            {{ post.content|striptags|truncatechars:150 }}
+                                        {% endif %}
+                                    </p>
+                                    <div class="d-flex flex-wrap align-items-center text-muted">
+                                        <span class="mr-4"><i class="far fa-calendar-alt mr-1"></i> {{ post.created_at|date:"Y-m-d" }}</span>
+                                        <span class="mr-4"><i class="far fa-eye mr-1"></i> {{ post.views|default:0 }}</span>
+                                        <span class="mr-4"><i class="far fa-comment mr-1"></i> {{ post.comments.count }}</span>
+                                        <span class="mr-4"><i class="far fa-heart mr-1"></i> {{ post.likes.count|default:0 }}</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column">
+                                    <a href="{% url 'user:edit_post' post.id %}" class="btn btn-sm btn-outline-primary action-btn mb-2">
+                                        <i class="fas fa-edit mr-1"></i> 编辑
+                                    </a>
+                                    {% if post.status == 'published' %}
+                                        <a href="{{ post.get_absolute_url }}" class="btn btn-sm btn-outline-secondary action-btn mb-2">
+                                            <i class="fas fa-eye mr-1"></i> 查看
+                                        </a>
+                                    {% else %}
+                                        <a href="#" class="btn btn-sm btn-outline-secondary action-btn mb-2">
+                                            <i class="fas fa-eye mr-1"></i> 预览
+                                        </a>
+                                    {% endif %}
+                                    <button type="button" class="btn btn-sm btn-outline-danger action-btn delete-btn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-post-id="{{ post.id }}" data-post-title="{{ post.title }}">
+                                        <i class="fas fa-trash mr-1"></i> 删除
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <div class="d-flex flex-column">
-                            <a href="#" class="btn btn-sm btn-outline-primary action-btn mb-2">
-                                <i class="fas fa-edit mr-1"></i> 编辑
-                            </a>
-                            <a href="#" class="btn btn-sm btn-outline-secondary action-btn mb-2">
-                                <i class="fas fa-eye mr-1"></i> 查看
-                            </a>
-                            <button type="button" class="btn btn-sm btn-outline-danger action-btn" data-bs-toggle="modal" data-bs-target="#deleteModal1">
-                                <i class="fas fa-trash mr-1"></i> 删除
-                            </button>
-                        </div>
+                    {% endfor %}
+                {% else %}
+                    <!-- 空状态（当没有文章时显示） -->
+                    <div class="empty-state">
+                        <i class="far fa-folder-open"></i>
+                        <h3>暂无文章</h3>
+                        <p>您还没有发布过文章，点击"发布文章"按钮开始创作吧！</p>
+                        <a href="{% url 'user:create_post' %}" class="btn btn-success mt-3">
+                            <i class="fas fa-plus mr-1"></i> 发布文章
+                        </a>
                     </div>
-                </div>
-                
-                <!-- 文章项2 -->
-                <div class="post-item">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h4 class="mb-2">
-                                <a href="#" class="text-dark text-decoration-none">Python高级特性详解</a>
-                            </h4>
-                            <div class="d-flex flex-wrap mb-3">
-                                <span class="badge-custom bg-warning text-dark mr-2 mb-2">学习笔记</span>
-                                <span class="badge-custom bg-success mr-2 mb-2">已发布</span>
-                            </div>
-                            <p class="text-muted mb-3">Python有许多强大的高级特性，如装饰器、生成器、上下文管理器等。本文详细讲解了这些特性的用法和实现原理，帮助你更好地理解和使用Python...</p>
-                            <div class="d-flex flex-wrap align-items-center text-muted">
-                                <span class="mr-4"><i class="far fa-calendar-alt mr-1"></i> 2026-01-17</span>
-                                <span class="mr-4"><i class="far fa-eye mr-1"></i> 89</span>
-                                <span class="mr-4"><i class="far fa-comment mr-1"></i> 5</span>
-                                <span class="mr-4"><i class="far fa-heart mr-1"></i> 12</span>
-                            </div>
-                        </div>
-                        <div class="d-flex flex-column">
-                            <a href="#" class="btn btn-sm btn-outline-primary action-btn mb-2">
-                                <i class="fas fa-edit mr-1"></i> 编辑
-                            </a>
-                            <a href="#" class="btn btn-sm btn-outline-secondary action-btn mb-2">
-                                <i class="fas fa-eye mr-1"></i> 查看
-                            </a>
-                            <button type="button" class="btn btn-sm btn-outline-danger action-btn" data-bs-toggle="modal" data-bs-target="#deleteModal2">
-                                <i class="fas fa-trash mr-1"></i> 删除
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 文章项3（草稿） -->
-                <div class="post-item">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h4 class="mb-2">
-                                <a href="#" class="text-dark text-decoration-none">前端开发最佳实践</a>
-                            </h4>
-                            <div class="d-flex flex-wrap mb-3">
-                                <span class="badge-custom bg-info mr-2 mb-2">技术分享</span>
-                                <span class="badge-custom bg-secondary mr-2 mb-2">草稿</span>
-                            </div>
-                            <p class="text-muted mb-3">前端开发领域发展迅速，本文总结了一些前端开发的最佳实践，包括代码组织、性能优化、用户体验等方面的内容，帮助你写出更加专业的前端代码...</p>
-                            <div class="d-flex flex-wrap align-items-center text-muted">
-                                <span class="mr-4"><i class="far fa-calendar-alt mr-1"></i> 2026-01-16</span>
-                                <span class="mr-4"><i class="far fa-eye mr-1"></i> 0</span>
-                                <span class="mr-4"><i class="far fa-comment mr-1"></i> 0</span>
-                                <span class="mr-4"><i class="far fa-heart mr-1"></i> 0</span>
-                            </div>
-                        </div>
-                        <div class="d-flex flex-column">
-                            <a href="#" class="btn btn-sm btn-outline-primary action-btn mb-2">
-                                <i class="fas fa-edit mr-1"></i> 编辑
-                            </a>
-                            <a href="#" class="btn btn-sm btn-outline-secondary action-btn mb-2">
-                                <i class="fas fa-eye mr-1"></i> 预览
-                            </a>
-                            <button type="button" class="btn btn-sm btn-outline-danger action-btn" data-bs-toggle="modal" data-bs-target="#deleteModal3">
-                                <i class="fas fa-trash mr-1"></i> 删除
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 文章项4 -->
-                <div class="post-item">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h4 class="mb-2">
-                                <a href="#" class="text-dark text-decoration-none">数据库优化技巧</a>
-                            </h4>
-                            <div class="d-flex flex-wrap mb-3">
-                                <span class="badge-custom bg-primary mr-2 mb-2">技术分享</span>
-                                <span class="badge-custom bg-success mr-2 mb-2">已发布</span>
-                            </div>
-                            <p class="text-muted mb-3">数据库优化是Web应用性能优化的重要组成部分，本文介绍了一些实用的数据库优化技巧，包括索引设计、查询优化、分库分表等方面的内容...</p>
-                            <div class="d-flex flex-wrap align-items-center text-muted">
-                                <span class="mr-4"><i class="far fa-calendar-alt mr-1"></i> 2026-01-15</span>
-                                <span class="mr-4"><i class="far fa-eye mr-1"></i> 134</span>
-                                <span class="mr-4"><i class="far fa-comment mr-1"></i> 9</span>
-                                <span class="mr-4"><i class="far fa-heart mr-1"></i> 18</span>
-                            </div>
-                        </div>
-                        <div class="d-flex flex-column">
-                            <a href="#" class="btn btn-sm btn-outline-primary action-btn mb-2">
-                                <i class="fas fa-edit mr-1"></i> 编辑
-                            </a>
-                            <a href="#" class="btn btn-sm btn-outline-secondary action-btn mb-2">
-                                <i class="fas fa-eye mr-1"></i> 查看
-                            </a>
-                            <button type="button" class="btn btn-sm btn-outline-danger action-btn" data-bs-toggle="modal" data-bs-target="#deleteModal4">
-                                <i class="fas fa-trash mr-1"></i> 删除
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 空状态（当没有文章时显示） -->
-                <!-- <div class="empty-state">
-                    <i class="far fa-folder-open"></i>
-                    <h3>暂无文章</h3>
-                    <p>您还没有发布过文章，点击"发布文章"按钮开始创作吧！</p>
-                    <a href="{% url 'user:create_post' %}" class="btn btn-success mt-3">
-                        <i class="fas fa-plus mr-1"></i> 发布文章
-                    </a>
-                </div> -->
+                {% endif %}
             </div>
             
             <!-- 分页 -->
+            {% if posts.has_other_pages %}
             <nav aria-label="Page navigation example" class="mt-4">
                 <ul class="pagination justify-content-center">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1">上一页</a>
-                    </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">下一页</a>
-                    </li>
+                    {% if posts.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ posts.previous_page_number }}" tabindex="-1">上一页</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1">上一页</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for i in posts.paginator.page_range %}
+                        {% if posts.number == i %}
+                            <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                        {% else %}
+                            <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if posts.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ posts.next_page_number }}">下一页</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">下一页</a>
+                        </li>
+                    {% endif %}
                 </ul>
             </nav>
+            {% endif %}
         </div>
     </div>
 
-    <!-- 删除确认模态框1 -->
-    <div class="modal fade" id="deleteModal1" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel1" aria-hidden="true">
+    <!-- 动态删除确认模态框 -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel1">确认删除</h5>
+                    <h5 class="modal-title" id="deleteModalLabel">确认删除</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    确定要删除文章"Django框架入门指南"吗？此操作不可恢复。
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-danger">确定删除</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 删除确认模态框2 -->
-    <div class="modal fade" id="deleteModal2" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel2" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel2">确认删除</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    确定要删除文章"Python高级特性详解"吗？此操作不可恢复。
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-danger">确定删除</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 删除确认模态框3 -->
-    <div class="modal fade" id="deleteModal3" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel3" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel3">确认删除</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    确定要删除文章"前端开发最佳实践"吗？此操作不可恢复。
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-danger">确定删除</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 删除确认模态框4 -->
-    <div class="modal fade" id="deleteModal4" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel4" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel4">确认删除</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    确定要删除文章"数据库优化技巧"吗？此操作不可恢复。
+                    确定要删除文章"<span id="deletePostTitle"></span>"吗？此操作不可恢复。
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
@@ -454,6 +341,55 @@
                 // 这里可以添加AJAX请求，根据筛选条件加载不同状态的文章
             });
         });
+        
+        // 删除确认模态框处理
+        document.querySelectorAll('.delete-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const postTitle = this.getAttribute('data-post-title');
+        const postId = this.getAttribute('data-post-id');
+        
+        // 填充模态框内容
+        document.getElementById('deletePostTitle').textContent = postTitle;
+        
+        // 设置删除按钮的点击事件，发送AJAX请求删除文章
+        const deleteButton = document.querySelector('#deleteModal .btn-danger');
+        deleteButton.onclick = function() {
+            // 发送AJAX请求删除文章
+            fetch('{% url "user:delete_post" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: `post_id=${postId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 删除成功后移除对应的文章项
+                    const postItem = document.querySelector(`[data-post-id="${postId}"]`).closest('.col-lg-4');
+                    if (postItem) {
+                        postItem.remove();
+                    }
+                    // 显示成功消息
+                    alert(data.message);
+                } else {
+                    // 显示错误消息
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('删除失败:', error);
+                alert('删除失败，请稍后重试');
+            })
+            .finally(() => {
+                // 关闭模态框
+                const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+                modal.hide();
+            });
+        };
+    });
+});
     </script>
 </body>
 </html>

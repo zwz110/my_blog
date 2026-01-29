@@ -12,5 +12,8 @@ urlpatterns = [
     path('reset_password/<int:user_id>/', views.reset_password, name='reset_password'),
     path('find_password/get_captcha/', views.get_captcha, name='get_captcha'),
     path('myposts/',views.my_posts,name='my_posts'),
-    path('createposts/',views.create_post,name='create_post')
+    path('createposts/',views.create_post,name='create_post'),
+    path('edit_post/<int:post_id>/',views.edit_post,name='edit_post'),
+    path('user/deletepost/',views.delete_post,name='delete_post'),
+    path('user/deletepost/<int:post_id>/',views.delete_post,name='delete_post'),
 ]
