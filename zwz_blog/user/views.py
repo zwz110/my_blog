@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .forms import UserRegisterForm,UserLoginForm,FindPasswordForm,ResetPasswordForm
+from .forms import UserRegisterForm,UserLoginForm,FindPasswordForm,ResetPasswordForm,ChangePasswordForm,ChangeEmailForm
 from blog.forms import PostForm
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.http import HttpResponse,JsonResponse
@@ -296,3 +296,183 @@ def delete_post(request):
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'删除失败：{str(e)}'})
 
+def my_comments(request):
+    # 我的评论视图
+    if not request.user.is_authenticated:
+        messages.error(request, '请先登录')
+        return redirect('user:login')
+    
+    # 获取用户的评论，按创建时间倒序排列
+    from blog.models import Comment
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    
+    comments_list = Comment.objects.filter(author=request.user).order_by('-created_at')
+    
+    # 分页
+    paginator = Paginator(comments_list, 5)  # 每页5条评论
+    page = request.GET.get('page')
+    
+    try:
+        comments = paginator.page(page)
+    except PageNotAnInteger:
+        # 如果page不是整数，显示第一页
+        comments = paginator.page(1)
+    except EmptyPage:
+        # 如果page超出范围，显示最后一页
+        comments = paginator.page(paginator.num_pages)
+
+    return render(request, 'html/my_comments.html', {'comments': comments})
+
+@require_http_methods(['GET'])
+def filter_comments(request):
+    # 筛选评论视图
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'message': '请先登录'})
+    
+    # 获取筛选状态
+    status = request.GET.get('status', 'all')
+    
+    # 获取用户的评论
+    from blog.models import Comment
+    comments_query = Comment.objects.filter(author=request.user)
+    
+    # 根据状态筛选
+    if status != 'all':
+        comments_query = comments_query.filter(status=status)
+    
+    # 按创建时间倒序排列
+    comments_query = comments_query.order_by('-created_at')
+    
+    # 构建返回数据
+    comments_data = []
+    for comment in comments_query:
+        try:
+            # 获取文章URL
+            post_url = comment.post.get_absolute_url()
+        except:
+            post_url = '#'
+        
+        # 构建状态样式和文本
+        status_class = ''
+        status_text = ''
+        if comment.status == 'approved':
+            status_class = 'bg-success'
+            status_text = '已批准'
+        elif comment.status == 'pending':
+            status_class = 'bg-warning text-dark'
+            status_text = '待审核'
+        elif comment.status == 'spam':
+            status_class = 'bg-danger'
+            status_text = '垃圾评论'
+        
+        comments_data.append({
+            'id': comment.id,
+            'content': comment.content,
+            'post_title': comment.post.title,
+            'post_url': post_url,
+            'status': comment.status,
+            'status_class': status_class,
+            'status_text': status_text,
+            'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M'),
+            'is_reply': comment.is_reply()
+        })
+    
+    return JsonResponse({'success': True, 'comments': comments_data})
+
+@require_http_methods(['POST'])
+def delete_comment(request, comment_id):
+    # 删除评论视图
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'message': '请先登录'})
+    
+    if not comment_id:
+        return JsonResponse({'success': False, 'message': '缺少评论ID'})
+    
+    try:
+        from blog.models import Comment
+        comment = Comment.objects.get(id=comment_id, author=request.user)
+        comment.delete()
+        return JsonResponse({'success': True, 'message': '评论删除成功'})
+    except Comment.DoesNotExist:
+        return JsonResponse({'success': False, 'message': '评论不存在或无权删除'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'删除失败：{str(e)}'})
+
+def my_favorites(request):
+    # 我的收藏视图
+    if not request.user.is_authenticated:
+        messages.error(request, '请先登录')
+        return redirect('user:login')
+    
+    # 获取用户的收藏，按收藏时间倒序排列
+    from blog.models import Favorite
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    
+    favorites_list = Favorite.objects.filter(user=request.user).order_by('-created_at')
+    
+    # 分页
+    paginator = Paginator(favorites_list, 5)  # 每页5条收藏
+    page = request.GET.get('page')
+    
+    try:
+        favorites = paginator.page(page)
+    except PageNotAnInteger:
+        # 如果page不是整数，显示第一页
+        favorites = paginator.page(1)
+    except EmptyPage:
+        # 如果page超出范围，显示最后一页
+        favorites = paginator.page(paginator.num_pages)
+
+    return render(request, 'html/my_favorites.html', {'favorites': favorites})
+
+@require_http_methods(['POST'])
+def delete_favorite(request, favorite_id):
+    # 取消收藏视图
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'message': '请先登录'})
+    
+    if not favorite_id:
+        return JsonResponse({'success': False, 'message': '缺少收藏ID'})
+    
+    try:
+        from blog.models import Favorite
+        favorite = Favorite.objects.get(id=favorite_id, user=request.user)
+        favorite.delete()
+        return JsonResponse({'success': True, 'message': '取消收藏成功'})
+    except Favorite.DoesNotExist:
+        return JsonResponse({'success': False, 'message': '收藏不存在或无权取消'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'取消收藏失败：{str(e)}'})
+
+def account_settings(request):
+    # 账号设置视图
+    if not request.user.is_authenticated:
+        messages.error(request, '请先登录')
+        return redirect('user:login')
+    
+    password_form = ChangePasswordForm(user=request.user)
+    email_form = ChangeEmailForm(user=request.user)
+    
+    if request.method == 'POST':
+        form_type = request.POST.get('form_type')
+        
+        if form_type == 'change_password':
+            password_form = ChangePasswordForm(user=request.user, data=request.POST)
+            if password_form.is_valid():
+                password_form.save()
+                messages.success(request, '密码修改成功，请重新登录')
+                return redirect('user:login')
+        
+        elif form_type == 'change_email':
+            email_form = ChangeEmailForm(user=request.user, data=request.POST)
+            if email_form.is_valid():
+                new_email = email_form.cleaned_data.get('new_email')
+                request.user.email = new_email
+                request.user.save()
+                messages.success(request, '邮箱修改成功')
+                return redirect('user:account_settings')
+    
+    return render(request, 'html/account_settings.html', {
+        'password_form': password_form,
+        'email_form': email_form
+    })

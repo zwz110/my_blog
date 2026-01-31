@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>账号设置 - ZwZ Blog</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .account-settings-container {
+            margin-top: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .settings-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            position: relative;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background-color: #007bff;
+        }
+        
+        .form-label {
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        
+        .alert {
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'blog:index' %}">
+                <strong>ZwZ Blog</strong>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:index' %}">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:category' %}">分类</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:tag' %}">标签</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:about' %}">关于</a>
+                    </li>
+                </ul>
+                
+                <div class="d-flex align-items-center">
+                    <ul class="navbar-nav mr-4">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {{ user.username }}
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                                    <a class="dropdown-item" href="{% url 'user:profile' %}">个人中心</a>
+                                    <a class="dropdown-item" href="{% url 'user:my_posts' %}">我的文章</a>
+                                    <a class="dropdown-item" href="{% url 'user:my_comments' %}">我的评论</a>
+                                    <a class="dropdown-item" href="{% url 'user:my_favorites' %}">我的收藏</a>
+                                    <a class="dropdown-item" href="{% url 'user:account_settings' %}">账号设置</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">退出登录</a>
+                                </div>
+                            </li>
+                        {% else %}
+                            <li class="nav-item mr-2">
+                                <a class="nav-link" href="{% url 'user:login' %}">登录</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'user:register' %}">注册</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                    <form class="form-inline my-2 my-lg-0" action="{% url 'blog:search' %}" method="get">
+                        <input class="form-control mr-sm-2" type="search" name="search" placeholder="搜索" aria-label="Search">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">搜索</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container account-settings-container">
+        <div class="settings-card">
+            <h2 class="section-title">
+                <i class="fas fa-shield-alt mr-2"></i> 账号安全
+            </h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-key mr-2"></i>修改密码</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if password_form.non_field_errors %}
+                                <div class="alert alert-danger">
+                                    {{ password_form.non_field_errors }}
+                                </div>
+                            {% endif %}
+                            
+                            <form method="post" action="{% url 'user:account_settings' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="form_type" value="change_password">
+                                
+                                <div class="mb-3">
+                                    <label for="{{ password_form.old_password.id_for_label }}" class="form-label">当前密码</label>
+                                    <input type="password" class="form-control {% if password_form.old_password.errors %}is-invalid{% endif %}" 
+                                           name="{{ password_form.old_password.html_name }}" 
+                                           id="{{ password_form.old_password.id_for_label }}" required>
+                                    {% if password_form.old_password.errors %}
+                                        <div class="invalid-feedback">
+                                            {{ password_form.old_password.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ password_form.new_password1.id_for_label }}" class="form-label">新密码</label>
+                                    <input type="password" class="form-control {% if password_form.new_password1.errors %}is-invalid{% endif %}" 
+                                           name="{{ password_form.new_password1.html_name }}" 
+                                           id="{{ password_form.new_password1.id_for_label }}" required>
+                                    {% if password_form.new_password1.errors %}
+                                        <div class="invalid-feedback">
+                                            {{ password_form.new_password1.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ password_form.new_password2.id_for_label }}" class="form-label">确认新密码</label>
+                                    <input type="password" class="form-control {% if password_form.new_password2.errors %}is-invalid{% endif %}" 
+                                           name="{{ password_form.new_password2.html_name }}" 
+                                           id="{{ password_form.new_password2.id_for_label }}" required>
+                                    {% if password_form.new_password2.errors %}
+                                        <div class="invalid-feedback">
+                                            {{ password_form.new_password2.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save mr-1"></i> 修改密码
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-envelope mr-2"></i>修改邮箱</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if email_form.non_field_errors %}
+                                <div class="alert alert-danger">
+                                    {{ email_form.non_field_errors }}
+                                </div>
+                            {% endif %}
+                            
+                            <form method="post" action="{% url 'user:account_settings' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="form_type" value="change_email">
+                                
+                                <div class="mb-3">
+                                    <label for="{{ email_form.new_email.id_for_label }}" class="form-label">新邮箱地址</label>
+                                    <input type="email" class="form-control {% if email_form.new_email.errors %}is-invalid{% endif %}" 
+                                           name="{{ email_form.new_email.html_name }}" 
+                                           id="{{ email_form.new_email.id_for_label }}" required>
+                                    {% if email_form.new_email.errors %}
+                                        <div class="invalid-feedback">
+                                            {{ email_form.new_email.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ email_form.password.id_for_label }}" class="form-label">当前密码</label>
+                                    <input type="password" class="form-control {% if email_form.password.errors %}is-invalid{% endif %}" 
+                                           name="{{ email_form.password.html_name }}" 
+                                           id="{{ email_form.password.id_for_label }}" required>
+                                    {% if email_form.password.errors %}
+                                        <div class="invalid-feedback">
+                                            {{ email_form.password.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save mr-1"></i> 修改邮箱
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-info-circle mr-2"></i>账号信息</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <strong>用户名：</strong> {{ user.username }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>邮箱：</strong> {{ user.email }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>注册时间：</strong> {{ user.date_joined|date:"Y-m-d H:i" }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>最后登录：</strong> {{ user.last_login|date:"Y-m-d H:i" }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">退出登录</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    确定要退出登录吗？
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <form method="post" action="{% url 'user:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">确定</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

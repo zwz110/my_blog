@@ -15,4 +15,10 @@ urlpatterns = [
     path('createposts/',views.create_post,name='create_post'),
     path('edit_post/<int:post_id>/',views.edit_post,name='edit_post'),
     path('delete_post/<int:post_id>/',views.delete_post,name='delete_post'),
+    path('my_comments/',views.my_comments,name='my_comments'),
+    path('filter_comments/',views.filter_comments,name='filter_comments'),
+    path('delete_comment/<int:comment_id>/',views.delete_comment,name='delete_comment'),
+    path('my_favorites/',views.my_favorites,name='my_favorites'),
+    path('delete_favorite/<int:favorite_id>/',views.delete_favorite,name='delete_favorite'),
+    path('account_settings/',views.account_settings,name='account_settings'),
 ]

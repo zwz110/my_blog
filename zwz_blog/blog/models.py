@@ -117,3 +117,18 @@ class Message(models.Model):
 
     def __str__(self):
         return f'{self.name}: {self.content[:30]}'
+
+class Favorite(models.Model):
+    """收藏模型"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites', verbose_name='用户')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='favorites', verbose_name='文章')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='收藏时间')
+
+    class Meta:
+        verbose_name = '收藏'
+        verbose_name_plural = '收藏管理'
+        ordering = ['-created_at']
+        unique_together = ('user', 'post')  # 确保用户对同一篇文章只能收藏一次
+
+    def __str__(self):
+        return f'{self.user.username} 收藏了 {self.post.title}'
