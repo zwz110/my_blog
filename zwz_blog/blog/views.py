@@ -221,10 +221,17 @@ def post_detail(request, year, month, day, slug):
         status='published'
     ).exclude(id=post.id)[:4]
     
+    # 检查用户是否已收藏该文章
+    is_favorited = False
+    if request.user.is_authenticated:
+        from .models import Favorite
+        is_favorited = Favorite.objects.filter(user=request.user, post=post).exists()
+    
     return render(request, 'blog/post_detail.html', {
         'post': post,
         'comments': comments,
-        'related_posts': related_posts
+        'related_posts': related_posts,
+        'is_favorited': is_favorited
     })
 def search(request):
     # 导入模型和Q对象
@@ -365,3 +372,32 @@ def delete_post(request):
         return JsonResponse({'success': False, 'message': '文章不存在或无权删除'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'删除失败：{str(e)}'})
+
+@require_http_methods(['POST'])
+def toggle_favorite(request):
+    # 切换收藏状态视图
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'message': '请先登录'})
+    
+    post_id = request.POST.get('post_id')
+    if not post_id:
+        return JsonResponse({'success': False, 'message': '缺少文章ID'})
+    
+    try:
+        post = Post.objects.get(id=post_id)
+        from .models import Favorite
+        
+        # 检查是否已经收藏
+        favorite, created = Favorite.objects.get_or_create(user=request.user, post=post)
+        
+        if not created:
+            # 已经收藏，取消收藏
+            favorite.delete()
+            return JsonResponse({'success': True, 'message': '取消收藏成功', 'is_favorited': False})
+        else:
+            # 未收藏，添加收藏
+            return JsonResponse({'success': True, 'message': '收藏成功', 'is_favorited': True})
+    except Post.DoesNotExist:
+        return JsonResponse({'success': False, 'message': '文章不存在'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'操作失败：{str(e)}'})

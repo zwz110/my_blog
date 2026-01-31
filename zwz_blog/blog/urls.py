@@ -13,4 +13,5 @@ urlpatterns=[
     path('search/',blog_v.search,name='search'),
     path('filter/',blog_v.filter_posts,name='filter_posts'),
     path('postdetail/',blog_v.post_detail,name='post_detail'),
+    path('toggle_favorite/',blog_v.toggle_favorite,name='toggle_favorite'),
 ]
