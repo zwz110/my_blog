@@ -41,7 +41,7 @@
 
 ## 安装步骤
 
-### 1. 克隆项目
+### 1. 克隆项
 
 ```bash
 git clone <repository-url>
