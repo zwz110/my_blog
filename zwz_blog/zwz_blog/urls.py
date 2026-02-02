@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
+from user.views import welcome
 
 
 urlpatterns = [
@@ -24,5 +25,5 @@ urlpatterns = [
     # 添加用户注册URL
     path('user/', include('user.urls')),
     # 添加Django内置认证URL
-    path('', include('django.contrib.auth.urls')),
+    path('',welcome,name='welcome'),
 ]

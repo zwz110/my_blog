@@ -476,3 +476,6 @@ def account_settings(request):
         'password_form': password_form,
         'email_form': email_form
     })
+def welcome(request):
+    return render(request,'html/welcome.html')
+
